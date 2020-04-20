@@ -2,16 +2,17 @@
 
 cd "$(dirname "$0")"
 
-main_obj='./cinc'
-dock='docker run --rm -v "$(pwd):/cinc" -w /cinc compilerbook'
+MAIN_OBJ='./cinc'
+ROOT="$(pwd)"
+DOCK="docker run --rm -v ${ROOT}:/cinc -w /cinc compilerbook"
 
 assert() {
   expected="$1"
   input="$2"
 
-  "$dock" "$main_obj" "$input" > tmp.s
-  "$dock" cc tmp.s -o tmp
-  "$dock" ./tmp
+  $DOCK "$MAIN_OBJ" "$input" > tmp.s
+  $DOCK cc tmp.s -o tmp
+  $DOCK ./tmp
   actual="$?"
 
   if [ "$actual" = "$expected" ]; then
@@ -25,5 +26,5 @@ assert() {
 assert 0 0
 assert 42 42
 
-echo 'OK: all tests passed'
+echo 'all tests passed'
 
