@@ -1,16 +1,31 @@
+#include "tokenizer.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "Give me two arguments\n");
-    return 1;
-  }
-
+void print_header() {
   printf(".intel_syntax noprefix\n");
   printf(".global main\n");
+}
+
+int main(int argc, char **argv) {
+  token = tokenize(argv[1]);
+
+  print_header();
   printf("main:\n");
-  printf("  mov rax, %d\n", atoi(argv[1]));
+
+  // number (operator number)*
+  printf("  mov rax, %d\n", expect_number());
+  while (!is_at_eof()) {
+    if (consume('+')) {
+      printf("  add rax, %d\n", expect_number());
+      continue;
+    }
+
+    expect('-');
+    printf("  sub rax, %d\n", expect_number());
+  }
+
   printf("  ret\n");
   return 0;
 }
+

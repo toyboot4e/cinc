@@ -1,19 +1,25 @@
-CFLAGS=-std=c11 -g -static
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
 
-MAIN_SRC = cinc.c
 MAIN_OBJ = cinc
 
 ROOT = /Users/toy/dev/c/cinc
 DOCK = docker run --rm -v "${ROOT}:/cinc" -w /cinc compilerbook
+
 CC = ${DOCK} cc
 CFLAGS=-std=c11 -g -static
 
-cinc: ${MAIN_SRC}
+
+$(MAIN_OBJ): $(OBJS)
+		$(CC) -o $(MAIN_OBJ) $(OBJS) $(LDFLAGS)
+
+$(OBJS): tokenizer.h
 
 test: ${MAIN_OBJ}
 		./test
 
 clean:
 		${DOCK} rm -f ${MAIN_OBJ} *.o *~ tmp*
+
 
 .PHONY: test clean
