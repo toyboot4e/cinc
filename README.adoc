@@ -1,4 +1,4 @@
 = C in C
 
-`cinc` is a hobby project to follow the https://www.sigbus.info/compilerbook[compilerbook] and to create a self-host compiler of the C programming language.
+`cinc` is a hobby project to follow the https://www.sigbus.info/compilerbook[compilerbook] and to create a self-hosting compiler of the C programming language.
 
