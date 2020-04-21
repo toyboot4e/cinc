@@ -1,3 +1,4 @@
+#include "tokenizer.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -7,34 +8,24 @@ void print_header() {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 2) {
-    fprintf(stderr, "Give me two arguments\n");
-    return 1;
-  }
-
-  char *p = argv[1];
+  token = tokenize(argv[1]);
 
   print_header();
-
   printf("main:\n");
-  printf("  mov rax, %ld\n", strtol(p, &p, 10));
-  while (*p) {
-    if (*p == '+') {
-      p++;
-      printf("  add rax, %ld\n", strtol(p, &p, 10));
+
+  // number (operator number)*
+  printf("  mov rax, %d\n", expect_number());
+  while (!is_at_eof()) {
+    if (consume('+')) {
+      printf("  add rax, %d\n", expect_number());
       continue;
     }
 
-    if (*p == '-') {
-      p++;
-      printf("  sub rax, %ld\n", strtol(p, &p, 10));
-      continue;
-    }
-
-    fprintf(stderr, "Unexpected char: '%c'\n", *p);
-    return 1;
+    expect('-');
+    printf("  sub rax, %d\n", expect_number());
   }
 
   printf("  ret\n");
   return 0;
 }
+
