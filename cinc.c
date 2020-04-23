@@ -8,6 +8,11 @@ void print_header() {
 }
 
 int main(int argc, char **argv) {
+  if (argc == 1) {
+    fprintf(stderr, "Give me input\n");
+    exit(1);
+  }
+
   token = tokenize(argv[1]);
 
   print_header();
@@ -28,4 +33,3 @@ int main(int argc, char **argv) {
   printf("  ret\n");
   return 0;
 }
-
