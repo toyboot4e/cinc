@@ -1,3 +1,6 @@
+#ifndef CINC_TOKENIZER_H
+#define CINC_TOKENIZER_H
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -35,3 +38,5 @@ void expect(char op);
 int expect_number();
 
 Token *tokenize(char *p);
+
+#endif

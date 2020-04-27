@@ -1,6 +1,3 @@
-#ifndef CINC_TOKENIZER
-#define CINC_TOKENIZER "tokenizer.c"
-
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -106,5 +103,3 @@ Token *tokenize(char *p) {
   new_token(TK_EOF, cur, p);
   return head.next;
 }
-
-#endif
