@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parser.h"
 #include "tokenizer.h"
 
 char *user_input;
