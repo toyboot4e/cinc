@@ -9,6 +9,7 @@
 #include <string.h>
 
 typedef enum {
+  /// One of `+-/*()`. Tokenized via `consume_char`
   TK_RESERVED,
   TK_NUM,
   TK_EOF,
