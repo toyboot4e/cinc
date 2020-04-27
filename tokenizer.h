@@ -34,7 +34,7 @@ extern Token *token;
 Token *new_token(TokenKind kind, Token *cur, char *str);
 bool is_at_eof();
 bool consume(char op);
-void expect(char op);
+void expect_char(char op);
 int expect_number();
 
 Token *tokenize(char *p);

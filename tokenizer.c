@@ -43,7 +43,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
 
 bool is_at_eof() { return token->kind == TK_EOF; }
 
-bool consume(char op) {
+bool consume_char(char op) {
   if (token->kind != TK_RESERVED || token->str[0] != op)
     return false;
   token = token->next;
@@ -51,7 +51,7 @@ bool consume(char op) {
 }
 
 // panics if it finds something other than the expected char
-void expect(char op) {
+void expect_char(char op) {
   if (token->kind != TK_RESERVED || token->str[0] != op)
     panic_at(token->str, "Expected a char '%c'", op);
   token = token->next;
