@@ -23,7 +23,7 @@ struct Node {
   int val; // available only if kind == ND_NUM
 };
 
-Node *new_node(NodeKind kind, Node *lhs, Node *rhs);
+Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
 Node *expr();
