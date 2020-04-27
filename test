@@ -6,11 +6,19 @@ MAIN_OBJ='./cinc'
 ROOT="$(pwd)"
 DOCK="docker run --rm -v ${ROOT}:/cinc -w /cinc compilerbook"
 
+# TODO: rm Docker one liners (each takes > 0.5 s)
+
 assert() {
   expected="$1"
   input="$2"
 
   $DOCK "$MAIN_OBJ" "$input" > tmp.s
+  status="$?"
+  if [ $status -ne 0 ] ; then
+      echo "Failed to compile \`$input\` with error code \`$status\`";
+      exit 1
+  fi
+
   $DOCK cc tmp.s -o tmp
   $DOCK ./tmp
   actual="$?"

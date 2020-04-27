@@ -1,6 +1,3 @@
-#ifndef CINC_TOKENIZER
-#define CINC_TOKENIZER "tokenizer.c"
-
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -8,7 +5,23 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "parser.h"
 #include "tokenizer.h"
+
+char *user_input;
+
+void panic_at(char *loc, char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  int pos = loc - user_input;
+  fprintf(stderr, "%s\n", user_input);
+  fprintf(stderr, "%*s", pos, "");
+  fprintf(stderr, "^ ");
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
 
 void panic(char *fmt, ...) {
   va_list ap;
@@ -18,7 +31,7 @@ void panic(char *fmt, ...) {
   exit(1);
 }
 
-// The shard `Token` among functions
+// The shared `Token` among functions
 Token *token;
 
 Token *new_token(TokenKind kind, Token *cur, char *str) {
@@ -31,40 +44,48 @@ Token *new_token(TokenKind kind, Token *cur, char *str) {
 
 bool is_at_eof() { return token->kind == TK_EOF; }
 
-bool consume(char op) {
+bool consume_char(char op) {
   if (token->kind != TK_RESERVED || token->str[0] != op)
     return false;
   token = token->next;
   return true;
 }
 
-// panics if it find something other than the expected char
-void expect(char op) {
+// panics if it finds something other than the expected char
+void expect_char(char op) {
   if (token->kind != TK_RESERVED || token->str[0] != op)
-    panic("Expected a char '%c'", op);
+    panic_at(token->str, "Expected a char '%c'", op);
   token = token->next;
 }
 
 // panics if it find something other than a numer
 int expect_number() {
   if (token->kind != TK_NUM)
-    panic("Expected a number");
+    panic_at(token->str, "Expected a number");
   int val = token->val;
   token = token->next;
   return val;
 }
 
+char *skip_ws(char *p) {
+  while (isspace(*p)) {
+    p++;
+  }
+  return p;
+}
+
 Token *tokenize(char *p) {
+  user_input = p;
+
   Token head;
   head.next = NULL;
   Token *cur = &head;
 
   while (true) {
-    while (isspace(*p)) {
-      p++;
-    }
-    if (!*p)
+    p = skip_ws(p);
+    if (!*p) {
       break;
+    }
 
     if (*p == '+' || *p == '-') {
       cur = new_token(TK_RESERVED, cur, p++);
@@ -77,11 +98,9 @@ Token *tokenize(char *p) {
       continue;
     }
 
-    panic("Given invalid `char*`");
+    panic_at(p, "Given invalid `char*`");
   }
 
   new_token(TK_EOF, cur, p);
   return head.next;
 }
-
-#endif
