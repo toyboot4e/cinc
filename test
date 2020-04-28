@@ -1,26 +1,28 @@
 #!/usr/bin/env bash
+#
+# In macOS, this script should be run in Docker (via `make test`)
 
 cd "$(dirname "$0")"
 
 MAIN_OBJ='./cinc'
 ROOT="$(pwd)"
-DOCK="docker run --rm -v ${ROOT}:/cinc -w /cinc compilerbook"
 
 # TODO: rm Docker one liners (each takes > 0.5 s)
 
+# CAUTION: the expected value must be in [0, 255]
 assert() {
   expected="$1"
   input="$2"
 
-  $DOCK "$MAIN_OBJ" "$input" > tmp.s
+  "$MAIN_OBJ" "$input" > tmp.s
   status="$?"
   if [ $status -ne 0 ] ; then
       echo "Failed to compile \`$input\` with error code \`$status\`";
       exit 1
   fi
 
-  $DOCK cc tmp.s -o tmp
-  $DOCK ./tmp
+  cc tmp.s -o tmp
+  ./tmp
   actual="$?"
 
   if [ "$actual" = "$expected" ]; then
@@ -44,6 +46,9 @@ assert 41 " 12 + 34 - 5 "
 assert 47 '5+6*7'
 assert 15 '5*(9-6)'
 assert 4 '(3+5)/2'
+
+# unary operator
+assert 15 '-(-3 * +5)'
 
 echo 'all tests passed'
 

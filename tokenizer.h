@@ -24,20 +24,15 @@ struct Token {
   char *str;
 };
 
-void panic_at(char *loc, char *fmt, ...);
-void panic(char *fmt, ...);
-
 /// The shard input
 extern char *user_input;
+
 /// The shard `Token`
 extern Token *token;
 
-Token *new_token(TokenKind kind, Token *cur, char *str);
-bool is_at_eof();
+Token *tokenize(char *p);
 bool consume_char(char op);
 void expect_char(char op);
 int expect_number();
-
-Token *tokenize(char *p);
 
 #endif

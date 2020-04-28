@@ -1,3 +1,7 @@
+//! cinc is a C compiler in C which only works on Linux.
+//!
+//! Stratedy: cinc doesn't `free` heap memories
+
 #include "codegen.h"
 #include "parser.h"
 #include "tokenizer.h"

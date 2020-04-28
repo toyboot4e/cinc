@@ -16,7 +16,7 @@ $(MAIN_OBJ): $(OBJS)
 $(OBJS): tokenizer.h
 
 test: ${MAIN_OBJ}
-		./test
+		$(DOCK) ./test
 
 clean:
 		${DOCK} rm -f ${MAIN_OBJ} *.o *~ tmp*
