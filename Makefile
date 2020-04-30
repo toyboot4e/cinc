@@ -5,9 +5,9 @@ OBJS=$(SRCS:.c=.o)
 MAIN_OBJ = cinc
 
 ROOT = /Users/toy/dev/c/cinc
-DOCK = docker run --rm -v "${ROOT}:/cinc" -w /cinc compilerbook
+DOCK = docker run --rm -it -v "${ROOT}:/cinc" -w /cinc compilerbook
 
-CC = ${DOCK} cc
+CC = $(DOCK) cc
 CFLAGS=-std=c11 -g -static
 
 $(MAIN_OBJ): $(OBJS)
@@ -19,7 +19,7 @@ test: ${MAIN_OBJ}
 		$(DOCK) ./test
 
 clean:
-		${DOCK} rm -f ${MAIN_OBJ} *.o *~ tmp*
+		$(DOCK) rm -f $(MAIN_OBJ) *.o *~ tmp*
 
 
 .PHONY: test clean
