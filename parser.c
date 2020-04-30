@@ -10,7 +10,6 @@
 #include "parser.h"
 #include "tokenizer.h"
 
-/// Sets up a binary node
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = kind;
@@ -20,7 +19,6 @@ Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
   return node;
 }
 
-/// Sets up a number node
 Node *new_node_num(int val) {
   Node *node = calloc(1, sizeof(Node));
   node->kind = ND_NUM;
@@ -28,12 +26,53 @@ Node *new_node_num(int val) {
   return node;
 }
 
+Node *eq();
+Node *rel();
+Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
 
-/// expr = mul ("+" mul | "-" mul)*
+/// expr = equality
 Node *expr() {
+  return eq();
+  //
+}
+
+/// equality = relational ("==" relational | "!=" relational)*
+Node *eq() {
+  Node *node = rel();
+  for (;;) {
+    if (consume_str("==")) {
+      node = new_node_binary(ND_EQ, node, rel());
+    } else if (consume_str("!=")) {
+      node = new_node_binary(ND_NE, node, rel());
+    } else {
+      return node;
+    }
+  }
+}
+
+/// relational = add (("<" | "<=" | ">" | ">=") add)*
+Node *rel() {
+  Node *node = add();
+  for (;;) {
+    if (consume_char('<')) {
+      node = new_node_binary(ND_LT, node, add());
+    } else if (consume_char('>')) {
+      node = new_node_binary(ND_GT, node, add());
+    } else if (consume_str("<=")) {
+      node = new_node_binary(ND_LE, node, add());
+    } else if (consume_str(">=")) {
+      node = new_node_binary(ND_GE, node, add());
+    } else {
+      return node;
+    }
+  }
+}
+
+/// add = mul (("+" | "-") mul)*
+Node *add() {
   Node *node = mul();
   for (;;) {
     if (consume_char('+')) {
@@ -46,7 +85,7 @@ Node *expr() {
   }
 }
 
-/// mul = unary ("*" unary | "/" unary)*
+/// mul = unary (("*" | "/") unary)*
 Node *mul() {
   Node *node = unary();
   for (;;) {
@@ -64,14 +103,12 @@ Node *mul() {
 Node *unary() {
   if (consume_char('+')) {
     return primary(); // this is enable by design
-  }
-
-  if (consume_char('-')) {
+  } else if (consume_char('-')) {
     // we treat it as (0 - primary)
     return new_node_binary(ND_SUB, new_node_num(0), primary());
+  } else {
+    return primary();
   }
-
-  return primary();
 }
 
 /// primary = num | "(" expr ")"

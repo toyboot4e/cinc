@@ -6,12 +6,22 @@
 #include "tokenizer.h"
 
 typedef enum {
+  // primitives
   ND_NUM,
 
+  // arithmetic operators
   ND_ADD,
   ND_SUB,
   ND_MUL,
   ND_DIV,
+
+  // comparison operators
+  ND_EQ,
+  ND_NE,
+  ND_LT,
+  ND_LE,
+  ND_GT,
+  ND_GE,
 } NodeKind;
 
 typedef struct Node Node;
