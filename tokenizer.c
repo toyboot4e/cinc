@@ -34,37 +34,55 @@ void panic(char *fmt, ...) {
 // The shared `Token` among functions
 Token *token;
 
-Token *new_token(TokenKind kind, Token *cur, char *str) {
+Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   Token *t = calloc(1, sizeof(Token));
   t->kind = kind;
-  t->str = str;
+  t->slice.str = str;
+  t->slice.len = len;
   cur->next = t;
   return t;
 }
 
 bool is_at_eof() { return token->kind == TK_EOF; }
 
-bool consume_char(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) {
+/// Used mainly for tokenizing operators
+bool consume_char(char c) {
+  if (token->kind != TK_RESERVED || token->slice.str[0] != c) {
     return false;
   }
   token = token->next;
   return true;
 }
 
-// panics if it finds something other than the expected char
+/// Used mainly for tokenizing operators
+bool consume_str(char *str) {
+  if (token->kind != TK_RESERVED) {
+    return false;
+  }
+
+  if (strlen(str) != token->slice.len ||
+      memcmp(token->slice.str, str, token->slice.len)) {
+    return false;
+  }
+
+  token = token->next;
+  return true;
+}
+
+// Panics if it finds something other than the expected char
 void expect_char(char op) {
-  if (token->kind != TK_RESERVED || token->str[0] != op) {
-    panic_at(token->str, "Expected a char '%c'", op);
+  if (token->kind != TK_RESERVED || token->slice.str[0] != op) {
+    panic_at(token->slice.str, "Expected a char '%c'", op);
   }
   token = token->next;
 }
 
-// panics if it find something other than a numer
+// Panics if it find something other than a number
 int expect_number() {
   if (token->kind != TK_NUM) {
-    panic_at(token->str, "Expected a number");
+    panic_at(token->slice.str, "Expected a number");
   }
+
   int val = token->val;
   token = token->next;
   return val;
@@ -75,6 +93,10 @@ char *skip_ws(char *p) {
     p++;
   }
   return p;
+}
+
+bool starts_with(char *str, char *part) {
+  return memcmp(str, part, strlen(part)) == 0;
 }
 
 Token *tokenize(char *p) {
@@ -90,20 +112,30 @@ Token *tokenize(char *p) {
       break;
     }
 
+    // we have to check longer tokens first
+    if (starts_with(p, "==") || starts_with(p, "!=") || starts_with(p, "<=") ||
+        starts_with(p, ">=")) {
+      cur = new_token(TK_RESERVED, cur, p, 2);
+      p += 2;
+      continue;
+    }
+
     if (strchr("+-*/()", *p)) {
-      cur = new_token(TK_RESERVED, cur, p++);
+      cur = new_token(TK_RESERVED, cur, p++, 1);
       continue;
     }
 
     if (isdigit(*p)) {
-      cur = new_token(TK_NUM, cur, p);
+      cur = new_token(TK_NUM, cur, p, 0);
+      char *anchor = p;
       cur->val = strtol(p, &p, 10);
+      cur->slice.len = p - anchor;
       continue;
     }
 
     panic_at(p, "Given invalid `char*`");
   }
 
-  new_token(TK_EOF, cur, p);
+  new_token(TK_EOF, cur, p, 0);
   return head.next;
 }
