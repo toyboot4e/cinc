@@ -2,11 +2,5 @@
 .git
 
 .ccls-cache
-cinc
-
-*~
-tmp*
-*.s
-*.o
-*.out
+obj
 
