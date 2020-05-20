@@ -6,31 +6,31 @@
 #include "tokenizer.h"
 
 typedef enum {
-  // primitives
-  ND_NUM,
+    // primitives
+    ND_NUM,
 
-  // arithmetic operators
-  ND_ADD,
-  ND_SUB,
-  ND_MUL,
-  ND_DIV,
+    // arithmetic operators
+    ND_ADD,
+    ND_SUB,
+    ND_MUL,
+    ND_DIV,
 
-  // comparison operators
-  ND_EQ,
-  ND_NE,
-  ND_LT,
-  ND_LE,
-  ND_GT,
-  ND_GE,
+    // comparison operators
+    ND_EQ,
+    ND_NE,
+    ND_LT,
+    ND_LE,
+    ND_GT,
+    ND_GE,
 } NodeKind;
 
 typedef struct Node Node;
 
 struct Node {
-  NodeKind kind;
-  Node *lhs;
-  Node *rhs;
-  int val; // available only if kind == ND_NUM
+    NodeKind kind;
+    Node *lhs;
+    Node *rhs;
+    int val; // available only if kind == ND_NUM
 };
 
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);

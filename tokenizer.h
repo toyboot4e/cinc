@@ -9,27 +9,27 @@
 #include <string.h>
 
 typedef enum {
-  /// One of `+-/*()` or comparison. Tokenized via `consume_char` or
-  /// `consume_str`
-  TK_RESERVED,
-  TK_NUM,
-  TK_EOF,
+    /// One of `+-/*()` or comparison. Tokenized via `consume_char` or
+    /// `consume_str`
+    TK_RESERVED,
+    TK_NUM,
+    TK_EOF,
 } TokenKind;
 
 typedef struct Slice Slice;
 
 struct Slice {
-  char *str;
-  int len;
+    char *str;
+    int len;
 };
 
 typedef struct Token Token;
 
 struct Token {
-  TokenKind kind;
-  Token *next;
-  int val; // if kind == TK_NUM
-  Slice slice;
+    TokenKind kind;
+    Token *next;
+    int val; // if kind == TK_NUM
+    Slice slice;
 };
 
 /// The shared input
