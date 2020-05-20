@@ -1,8 +1,8 @@
-SRCS=$(wildcard *.c)
-HEADERS=$(wildcard *.h)
-OBJS=$(SRCS:.c=.o)
+SRCS    = $(wildcard src/*.c)
+HEADERS = $(wildcard src/*.h)
+OBJS    = $(SRCS:src/.c=obj/.o)
 
-MAIN_OBJ = cinc
+MAIN_OBJ = obj/cinc
 
 ROOT = /Users/toy/dev/c/cinc
 DOCK = docker run --rm -it -v "${ROOT}:/cinc" -w /cinc compilerbook
@@ -19,7 +19,7 @@ test: ${MAIN_OBJ}
 		$(DOCK) ./test
 
 clean:
-		$(DOCK) rm -f $(MAIN_OBJ) *.o *~ tmp*
+		$(DOCK) rm -f $(MAIN_OBJ) obj/*.o obj/*~ obj/tmp*
 
 
 .PHONY: test clean
