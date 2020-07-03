@@ -42,38 +42,38 @@ Token *tokenize(char *src) {
     Token *tk = &head;
 
     while (true) {
-        src = skip_ws(src);
-        if (!*src) {
+        ptr = skip_ws(ptr);
+        if (!*ptr) {
             break; // because C string is null-terminated, we can do this
         }
 
         // we have to check longer tokens first
-        if (str_starts_with(src, "==") || str_starts_with(src, "!=") ||
-            str_starts_with(src, "<=") || str_starts_with(src, ">=")) {
-            tk = new_token(TK_RESERVED, src, 2, tk);
-            src += 2;
+        if (str_starts_with(ptr, "==") || str_starts_with(ptr, "!=") ||
+            str_starts_with(ptr, "<=") || str_starts_with(ptr, ">=")) {
+            tk = new_token(TK_RESERVED, ptr, 2, tk);
+            ptr += 2;
             continue;
         }
 
         // then single character tokens
-        if (strchr("+-*/()", *src)) {
-            tk = new_token(TK_RESERVED, src++, 1, tk);
+        if (strchr("+-*/()<>=", *ptr)) {
+            tk = new_token(TK_RESERVED, ptr++, 1, tk);
             continue;
         }
 
         // number
-        if (isdigit(*src)) {
-            tk = new_token(TK_NUM, src, 0, tk);
-            char *anchor = src;
-            tk->val = strtol(src, &src, 10);
-            tk->slice.len = src - anchor;
+        if (isdigit(*ptr)) {
+            tk = new_token(TK_NUM, ptr, 0, tk);
+            char *anchor = ptr;
+            tk->val = strtol(ptr, &ptr, 10);
+            tk->slice.len = ptr - anchor;
             continue;
         }
 
-        panic_at(src, ptr, "Invalid string");
+        panic_at(ptr, src, "Invalid string for the tokenizer");
     }
 
-    new_token(TK_EOF, src, 0, tk);
+    new_token(TK_EOF, ptr, 0, tk);
     return head.next;
 }
 
