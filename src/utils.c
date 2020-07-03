@@ -1,3 +1,5 @@
+// † The utilities †
+
 // TODO: rm unnecessary includes
 #include <ctype.h>
 #include <stdarg.h>
@@ -14,12 +16,12 @@ void panic(char *fmt, ...) {
     exit(1);
 }
 
-void panic_at(char *loc, char *input, char *fmt, ...) {
+void panic_at(char *loc, char *src, char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
 
-    int pos = loc - input;
-    fprintf(stderr, "%s\n", input);
+    int pos = loc - src;
+    fprintf(stderr, "%s\n", src);
     fprintf(stderr, "%*s", pos, "");
     fprintf(stderr, "^ ");
     vfprintf(stderr, fmt, ap);

@@ -5,10 +5,13 @@
 
 #include "tokenizer.h"
 
-/// Global state
-//
-/// We stick with it to make the code clear.
-extern Token *g_token;
+typedef struct ParseState ParseState;
+/// An instance of `ParseState` is often referred to as `pst`
+struct ParseState {
+    Token *tk;
+    char *src;
+};
+ParseState pst_init(Token *tk, char *src);
 
 typedef enum { // forward-declarations for enums are forbidden..
     // primitives

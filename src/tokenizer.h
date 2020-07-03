@@ -10,9 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-/// Global state
-extern char *g_input;
-
 typedef enum {
     /// Non-strict token. One of `+-/*()` or comparison.
     TK_RESERVED,
@@ -41,11 +38,5 @@ struct Token {
 
 /// Tokenizes an input string and builds a linked list of it
 Token *tokenize(char *p);
-
-// Token readers
-bool consume_char(char op);
-bool consume_str(char *str);
-void expect_char(char op);
-int expect_number();
 
 #endif

@@ -14,8 +14,6 @@
 #include "tokenizer.h"
 #include "utils.h"
 
-char *g_input;
-
 Token *new_token(TokenKind kind, char *str, int len, Token *cur) {
     Token *t = calloc(1, sizeof(Token));
     t->kind = kind;
@@ -37,7 +35,7 @@ bool str_starts_with(char *str, char *part) {
 }
 
 Token *tokenize(char *ptr) {
-    g_input = ptr;
+    char *src = ptr;
 
     Token head;
     head.next = NULL;
@@ -72,7 +70,7 @@ Token *tokenize(char *ptr) {
             continue;
         }
 
-        panic_at(ptr, g_input, "Invalid string");
+        panic_at(ptr, src, "Invalid string");
     }
 
     new_token(TK_EOF, ptr, 0, tk);

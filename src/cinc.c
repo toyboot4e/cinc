@@ -23,8 +23,10 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    g_token = tokenize(argv[1]);
-    Node *node = expr(g_token);
+    char *src = argv[1];
+    Token *tk = tokenize(src);
+    ParseState pst = pst_init(tk, src);
+    Node *node = expr(&pst);
 
     asm_header();
     gen(node);

@@ -1,11 +1,10 @@
 SRCS     = $(wildcard src/*.c)
 HEADERS  = $(wildcard src/*.h)
 OBJS     = $(SRCS:src/.c=obj/.o)
-
 MAIN_OBJ = obj/cinc
-ROOT = /Users/toy/dev/c/cinc
 
 # for macOS
+ROOT = /Users/toy/dev/c/cinc
 DOCK = docker run --rm -it -v "${ROOT}:/cinc" -w /cinc compilerbook
 
 CC = $(DOCK) cc
