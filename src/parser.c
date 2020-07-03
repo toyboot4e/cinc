@@ -161,13 +161,15 @@ Node *mul(ParseState *pst) {
     }
 }
 
-/// unary = ("+" | "-")? primary
+/// unary = ("+" | "-") unary | primary
+//
+// Plus operator can be used like `3 + +5` by design.
 Node *unary(ParseState *pst) {
     if (consume_char(pst, '+')) {
-        return primary(pst); // this is enable by design
+        return unary(pst);
     } else if (consume_char(pst, '-')) {
         // we treat it as (0 - primary)
-        return new_node_binary(ND_SUB, new_node_num(0), primary(pst));
+        return new_node_binary(ND_SUB, new_node_num(0), unary(pst));
     } else {
         return primary(pst);
     }
