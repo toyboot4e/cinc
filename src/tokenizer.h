@@ -37,6 +37,6 @@ struct Token {
 };
 
 /// Tokenizes an input string and builds a linked list of it
-Token *tokenize(char *p);
+Token *tokenize(char *src);
 
 #endif

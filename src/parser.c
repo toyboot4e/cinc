@@ -24,7 +24,7 @@ void pst_inc(ParseState *pst) { pst->tk = pst->tk->next; }
 // Token readers
 //
 // All tokens are once toknized into a linked list and then read one by one by
-// parser
+// parser. We read them using string. That's ok because `cinc` is only for C.
 
 bool consume_char(ParseState *pst, char c) {
     if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != c) {
@@ -88,12 +88,12 @@ Node *new_node_num(int val) {
 // --------------------------------------------------------------------------------
 // Parsers
 
-Node *eq();
-Node *rel();
-Node *add();
-Node *mul();
-Node *unary();
-Node *primary();
+Node *eq(ParseState *pst);
+Node *rel(ParseState *pst);
+Node *add(ParseState *pst);
+Node *mul(ParseState *pst);
+Node *unary(ParseState *pst);
+Node *primary(ParseState *pst);
 
 /// expr = equality
 Node *expr(ParseState *pst) {
@@ -120,13 +120,13 @@ Node *rel(ParseState *pst) {
     Node *node = add(pst);
     for (;;) {
         if (consume_char(pst, '<')) {
-            node = new_node_binary(ND_LT, node, add());
+            node = new_node_binary(ND_LT, node, add(pst));
         } else if (consume_char(pst, '>')) {
-            node = new_node_binary(ND_GT, node, add());
+            node = new_node_binary(ND_GT, node, add(pst));
         } else if (consume_str(pst, "<=")) {
-            node = new_node_binary(ND_LE, node, add());
+            node = new_node_binary(ND_LE, node, add(pst));
         } else if (consume_str(pst, ">=")) {
-            node = new_node_binary(ND_GE, node, add());
+            node = new_node_binary(ND_GE, node, add(pst));
         } else {
             return node;
         }
@@ -135,12 +135,12 @@ Node *rel(ParseState *pst) {
 
 /// add = mul (("+" | "-") mul)*
 Node *add(ParseState *pst) {
-    Node *node = mul();
+    Node *node = mul(pst);
     for (;;) {
         if (consume_char(pst, '+')) {
-            node = new_node_binary(ND_ADD, node, mul());
+            node = new_node_binary(ND_ADD, node, mul(pst));
         } else if (consume_char(pst, '-')) {
-            node = new_node_binary(ND_SUB, node, mul());
+            node = new_node_binary(ND_SUB, node, mul(pst));
         } else {
             return node;
         }
@@ -152,9 +152,9 @@ Node *mul(ParseState *pst) {
     Node *node = unary(pst);
     for (;;) {
         if (consume_char(pst, '*')) {
-            node = new_node_binary(ND_MUL, node, unary());
+            node = new_node_binary(ND_MUL, node, unary(pst));
         } else if (consume_char(pst, '/')) {
-            node = new_node_binary(ND_DIV, node, unary());
+            node = new_node_binary(ND_DIV, node, unary(pst));
         } else {
             return node;
         }
@@ -167,7 +167,7 @@ Node *unary(ParseState *pst) {
         return primary(pst); // this is enable by design
     } else if (consume_char(pst, '-')) {
         // we treat it as (0 - primary)
-        return new_node_binary(ND_SUB, new_node_num(0), primary());
+        return new_node_binary(ND_SUB, new_node_num(0), primary(pst));
     } else {
         return primary(pst);
     }

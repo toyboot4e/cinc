@@ -43,6 +43,6 @@ struct Node {
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
-Node *expr();
+Node *expr(ParseState *pst);
 
 #endif

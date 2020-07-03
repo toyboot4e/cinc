@@ -34,46 +34,46 @@ bool str_starts_with(char *str, char *part) {
     return memcmp(str, part, strlen(part)) == 0;
 }
 
-Token *tokenize(char *ptr) {
-    char *src = ptr;
+Token *tokenize(char *src) {
+    char *ptr = src;
 
     Token head;
     head.next = NULL;
     Token *tk = &head;
 
     while (true) {
-        ptr = skip_ws(ptr);
-        if (!*ptr) {
+        src = skip_ws(src);
+        if (!*src) {
             break; // because C string is null-terminated, we can do this
         }
 
         // we have to check longer tokens first
-        if (str_starts_with(ptr, "==") || str_starts_with(ptr, "!=") ||
-            str_starts_with(ptr, "<=") || str_starts_with(ptr, ">=")) {
-            tk = new_token(TK_RESERVED, ptr, 2, tk);
-            ptr += 2;
+        if (str_starts_with(src, "==") || str_starts_with(src, "!=") ||
+            str_starts_with(src, "<=") || str_starts_with(src, ">=")) {
+            tk = new_token(TK_RESERVED, src, 2, tk);
+            src += 2;
             continue;
         }
 
         // then single character tokens
-        if (strchr("+-*/()", *ptr)) {
-            tk = new_token(TK_RESERVED, ptr++, 1, tk);
+        if (strchr("+-*/()", *src)) {
+            tk = new_token(TK_RESERVED, src++, 1, tk);
             continue;
         }
 
         // number
-        if (isdigit(*ptr)) {
-            tk = new_token(TK_NUM, ptr, 0, tk);
-            char *anchor = ptr;
-            tk->val = strtol(ptr, &ptr, 10);
-            tk->slice.len = ptr - anchor;
+        if (isdigit(*src)) {
+            tk = new_token(TK_NUM, src, 0, tk);
+            char *anchor = src;
+            tk->val = strtol(src, &src, 10);
+            tk->slice.len = src - anchor;
             continue;
         }
 
-        panic_at(ptr, src, "Invalid string");
+        panic_at(src, ptr, "Invalid string");
     }
 
-    new_token(TK_EOF, ptr, 0, tk);
+    new_token(TK_EOF, src, 0, tk);
     return head.next;
 }
 

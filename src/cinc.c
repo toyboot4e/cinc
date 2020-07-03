@@ -10,12 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void asm_header() {
-    printf(".intel_syntax noprefix\n");
-    printf(".global main\n");
-    printf("main:\n");
-}
-
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr,

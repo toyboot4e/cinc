@@ -7,6 +7,12 @@
 
 #include "parser.h"
 
+void asm_header() {
+    printf(".intel_syntax noprefix\n");
+    printf(".global main\n");
+    printf("main:\n");
+}
+
 void gen_bin_node(Node *node);
 void gen(Node *node) {
     if (node->kind == ND_NUM) {
