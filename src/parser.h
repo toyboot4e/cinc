@@ -5,7 +5,12 @@
 
 #include "tokenizer.h"
 
-typedef enum {
+/// Global state
+//
+/// We stick with it to make the code clear.
+extern Token *g_token;
+
+typedef enum { // forward-declarations for enums are forbidden..
     // primitives
     ND_NUM,
 
@@ -25,7 +30,6 @@ typedef enum {
 } NodeKind;
 
 typedef struct Node Node;
-
 struct Node {
     NodeKind kind;
     Node *lhs;

@@ -7,16 +7,16 @@
 
 #include "parser.h"
 
-void gen_binary_node(Node *node);
+void gen_bin_node(Node *node);
 void gen(Node *node) {
     if (node->kind == ND_NUM) {
         printf(" push %d\n", node->val);
         return;
     }
-    gen_binary_node(node);
+    gen_bin_node(node);
 }
 
-void gen_binary_node(Node *node) {
+void gen_bin_node(Node *node) {
     gen(node->lhs);
     gen(node->rhs);
     printf(" pop rdi\n");

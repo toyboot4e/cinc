@@ -1,6 +1,7 @@
 //! cinc is a C compiler in C which only works on Linux.
 //!
-//! Stratedy: cinc doesn't `free` heap memories
+//! Stratedy: cinc doesn't `free` heap memories. cinc uses global variables for
+//! tokenizer
 
 #include "codegen.h"
 #include "parser.h"
@@ -9,7 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void print_header() {
+void asm_header() {
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
     printf("main:\n");
@@ -22,10 +23,10 @@ int main(int argc, char **argv) {
         exit(1);
     }
 
-    token = tokenize(argv[1]);
-    Node *node = expr(token);
+    g_token = tokenize(argv[1]);
+    Node *node = expr(g_token);
 
-    print_header();
+    asm_header();
     gen(node);
     printf(" pop rax\n");
     printf(" ret\n");

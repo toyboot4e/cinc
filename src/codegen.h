@@ -3,6 +3,7 @@
 
 #include "parser.h"
 
+/// Generates assembly for a node
 void gen(Node *node);
 
 #endif
