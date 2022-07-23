@@ -3,11 +3,10 @@ HEADERS  = $(wildcard src/*.h)
 OBJS     = $(SRCS:src/.c=obj/.o)
 MAIN_OBJ = obj/cinc
 
-# for macOS
-ROOT = /Users/toy/dev/c/cinc
-DOCK = docker run --rm -it -v "${ROOT}:/cinc" -w /cinc compilerbook
+ROOT = $$HOME/dev/c/cinc
+DOCKER = docker run --rm -it -v "${ROOT}:/cinc" -w /cinc compilerbook
 
-CC = $(DOCK) cc
+CC = $(DOCKER) cc
 CFLAGS=-std=c11 -g -static
 
 $(MAIN_OBJ): $(OBJS)
@@ -16,10 +15,11 @@ $(MAIN_OBJ): $(OBJS)
 $(OBJS): $(HEADERS)
 
 test: ${MAIN_OBJ}
-		$(DOCK) ./test
+		$(DOCKER) ./test
 
 clean:
-		$(DOCK) rm -f $(MAIN_OBJ) obj/*.o obj/*~ obj/tmp*
+		$(DOCKER) rm -f $(MAIN_OBJ) obj/*.o obj/*~ obj/tmp*
 
+# doc: 
 
 .PHONY: test clean

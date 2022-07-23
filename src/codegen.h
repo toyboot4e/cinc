@@ -3,6 +3,7 @@
 
 #include "parser.h"
 
+/// Generates assembly header
 void asm_header();
 
 /// Generates assembly for a node

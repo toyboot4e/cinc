@@ -1,4 +1,22 @@
 = C in C
+:compilerbook: https://www.sigbus.info/compilerbook[compilerbook]
+:86-64-cheat: https://www.sigbus.info/compilerbook#%E4%BB%98%E9%8C%B21x86-64%E5%91%BD%E4%BB%A4%E3%82%BB%E3%83%83%E3%83%88-%E3%83%81%E3%83%BC%E3%83%88%E3%82%B7%E3%83%BC%E3%83%88[x86-64 operation cheatsheet]
+:chibicc: https://github.com/rui314/chibicc[chibicc]
+:godbolt: https://godbolt.org/[Compiler Explorer (godbolt)]
 
-`cinc` is a hobby project to follow the https://www.sigbus.info/compilerbook[compilerbook] and to create a self-hosting compiler of the C programming language.
+`cinc` is a hobby project to follow the {compilerbook} and to create a self-hosting compiler of the C programming language.
+
+== Setup (macOS)
+
+[source,sh]
+----
+$ docker build -t compilerbook https://www.sigbus.info/compilerbook/Dockerfile
+----
+
+== References
+
+* {compilerbook}
+  * {x86-64}
+* {chibicc}
+* {godbolt}
 

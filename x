@@ -1,8 +1,6 @@
 #!/usr/bin/env bash -euE
-#
-# Exectutes commands via Docker from this directory
-# Not used by the `Makefile`
 
+# Exectutes commands via Docker from this directory
 # docker build -t compilerbook https://www.sigbus.info/compilerbook/Dockerfile
 
 cd "$(dirname "$0")"

@@ -1,4 +1,4 @@
-//! † The parser †
+//! The parser
 
 #ifndef CINC_PARSER_H
 #define CINC_PARSER_H
@@ -6,11 +6,13 @@
 #include "tokenizer.h"
 
 typedef struct ParseState ParseState;
-/// An instance of `ParseState` is often referred to as `pst`
+
+/// Parse state, often referred to as `pst`
 struct ParseState {
     Token *tk;
     char *src;
 };
+
 ParseState pst_init(Token *tk, char *src);
 
 typedef enum { // forward-declarations for enums are forbidden..
@@ -33,11 +35,12 @@ typedef enum { // forward-declarations for enums are forbidden..
 } NodeKind;
 
 typedef struct Node Node;
+
 struct Node {
     NodeKind kind;
     Node *lhs;
     Node *rhs;
-    int val; // available only if kind == ND_NUM
+    int val;
 };
 
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);

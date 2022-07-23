@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Tests run via `make test`. In macOS, it's run with Docker.
+# Tests run via `make test` (via Docker)
 
 cd "$(dirname "$0")"
 
@@ -9,26 +9,26 @@ ROOT="$(pwd)"
 
 # CAUTION: the expected value must be in [0, 255], i.e. the range of exit status
 assert() {
-  expected="$1"
-  input="$2"
+    expected="$1"
+    input="$2"
 
-  "$MAIN_OBJ" "$input" > obj/tmp.s
-  status="$?"
-  if [ $status -ne 0 ] ; then
-      echo "Failed to compile \`$input\` with error code \`$status\`";
-      exit 1
-  fi
+    "$MAIN_OBJ" "$input" > obj/tmp.s
+    status="$?"
+    if [ $status -ne 0 ] ; then
+        echo "Failed to compile \`$input\` with error code \`$status\`";
+        exit 1
+    fi
 
-  cc obj/tmp.s -o obj/tmp
-  ./obj/tmp
-  actual="$?"
+    cc obj/tmp.s -o obj/tmp
+    ./obj/tmp
+    actual="$?"
 
-  if [ "$actual" = "$expected" ]; then
-    echo "ok: \`$input\` => $actual"
-  else
-    echo "err: \`$input\` => $expected expected, but got $actual"
-    exit 1
-  fi
+    if [ "$actual" = "$expected" ]; then
+        echo "ok: \`$input\` => $actual"
+    else
+        echo "err: \`$input\` => $expected expected, but got $actual"
+        exit 1
+    fi
 }
 
 assert 0 0
