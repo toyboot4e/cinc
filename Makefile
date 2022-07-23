@@ -18,7 +18,7 @@ test: ${MAIN_OBJ}
 		$(DOCKER) ./test
 
 clean:
-		$(DOCKER) rm -f $(MAIN_OBJ) obj/*.o obj/*~ obj/tmp*
+		rm -f $(MAIN_OBJ) obj/*.o obj/*~ obj/tmp*
 
 # doc: 
 
