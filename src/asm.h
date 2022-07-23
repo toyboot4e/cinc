@@ -7,7 +7,7 @@
 void asm_header();
 
 /// Generates assembly for a node
-void gen(Node *node);
+void asm_node(Node *node);
 
 #endif
 

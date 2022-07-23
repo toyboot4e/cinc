@@ -15,7 +15,7 @@ void asm_header() {
 
 static void gen_bin_node(Node *node);
 
-void gen(Node *node) {
+void asm_node(Node *node) {
     if (node->kind == ND_NUM) {
         printf(" push %d\n", node->val);
         return;
@@ -24,10 +24,10 @@ void gen(Node *node) {
 }
 
 static void gen_bin_node(Node *node) {
-    gen(node->lhs);
-    gen(node->rhs);
     printf(" pop rdi\n");
     printf(" pop rax\n");
+    asm_node(node->lhs);
+    asm_node(node->rhs);
 
     switch (node->kind) {
     case ND_ADD:

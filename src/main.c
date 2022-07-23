@@ -1,6 +1,8 @@
 //! cinc is a C compiler in which emits x86-64 assembly in Intel syntax
 //!
-//! Strategy: cinc doesn't `free` heap memories. cinc uses global variables for tokenizer
+//! Strategy:
+//! - Don't `free` heap memories
+//! - Don't use global variables
 
 #include "asm.h"
 #include "parse.h"
@@ -22,7 +24,7 @@ int main(int argc, char **argv) {
     Node *node = expr(&pst);
 
     asm_header();
-    gen(node);
+    asm_node(node);
     printf(" pop rax\n");
     printf(" ret\n");
 
