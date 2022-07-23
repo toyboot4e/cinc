@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.h"
-#include "tokenizer.h"
+#include "parse.h"
+#include "token.h"
 #include "utils.h"
 
 ParseState pst_init(Token *tk, char *src) {

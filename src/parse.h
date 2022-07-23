@@ -3,7 +3,7 @@
 #ifndef CINC_PARSER_H
 #define CINC_PARSER_H
 
-#include "tokenizer.h"
+#include "token.h"
 
 typedef struct ParseState ParseState;
 

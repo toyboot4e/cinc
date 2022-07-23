@@ -18,6 +18,7 @@ typedef enum {
 } TokenKind;
 
 typedef struct Str Slice;
+
 /// A slice of a string
 struct Str {
     char *str;
@@ -25,6 +26,7 @@ struct Str {
 };
 
 typedef struct Token Token;
+
 /// A slice of source string
 struct Token {
     TokenKind kind;

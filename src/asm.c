@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.h"
+#include "parse.h"
 
 void asm_header() {
     printf(".intel_syntax noprefix\n");

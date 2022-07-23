@@ -10,8 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "parser.h"
-#include "tokenizer.h"
+#include "parse.h"
+#include "token.h"
 #include "utils.h"
 
 Token *new_token(TokenKind kind, char *str, int len, Token *cur) {
@@ -76,4 +76,3 @@ Token *tokenize(char *src) {
     new_token(TK_EOF, ptr, 0, tk);
     return head.next;
 }
-

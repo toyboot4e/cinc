@@ -2,9 +2,9 @@
 //!
 //! Strategy: cinc doesn't `free` heap memories. cinc uses global variables for tokenizer
 
-#include "codegen.h"
-#include "parser.h"
-#include "tokenizer.h"
+#include "asm.h"
+#include "parse.h"
+#include "token.h"
 
 #include <stdio.h>
 #include <stdlib.h>

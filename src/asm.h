@@ -1,7 +1,7 @@
 #ifndef CINC_CODEGEN_H
 #define CINC_CODEGEN_H
 
-#include "parser.h"
+#include "parse.h"
 
 /// Generates assembly header
 void asm_header();
