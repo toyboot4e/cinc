@@ -17,8 +17,7 @@
 Token *new_token(TokenKind kind, char *str, int len, Token *cur) {
     Token *t = calloc(1, sizeof(Token));
     t->kind = kind;
-    t->slice.str = str;
-    t->slice.len = len;
+    t->slice = (Slice) { .str = str, .len = len };
     cur->next = t;
     return t;
 }

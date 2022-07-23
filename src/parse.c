@@ -18,7 +18,12 @@ ParseState pst_init(Token *tk, char *src) {
     return pst;
 }
 
-void pst_inc(ParseState *pst) { pst->tk = pst->tk->next; }
+ParseState pst_from_source(char *src) {
+  Token* tk = tokenize(src);
+  return pst_init(tk, src);
+}
+
+static void pst_inc(ParseState *pst) { pst->tk = pst->tk->next; }
 
 // --------------------------------------------------------------------------------
 // Token readers
@@ -88,21 +93,21 @@ Node *new_node_num(int val) {
 // --------------------------------------------------------------------------------
 // Parsers
 
-Node *eq(ParseState *pst);
-Node *rel(ParseState *pst);
-Node *add(ParseState *pst);
-Node *mul(ParseState *pst);
-Node *unary(ParseState *pst);
-Node *primary(ParseState *pst);
+static Node *eq(ParseState *pst);
+static Node *rel(ParseState *pst);
+static Node *add(ParseState *pst);
+static Node *mul(ParseState *pst);
+static Node *unary(ParseState *pst);
+static Node *primary(ParseState *pst);
 
 /// expr = equality
-Node *expr(ParseState *pst) {
+Node *parse_expr(ParseState *pst) {
     return eq(pst);
     //
 }
 
 /// equality = relational ("==" relational | "!=" relational)*
-Node *eq(ParseState *pst) {
+static Node *eq(ParseState *pst) {
     Node *node = rel(pst);
     for (;;) {
         if (consume_str(pst, "==")) {
@@ -116,7 +121,7 @@ Node *eq(ParseState *pst) {
 }
 
 /// relational = add (("<" | "<=" | ">" | ">=") add)*
-Node *rel(ParseState *pst) {
+static Node *rel(ParseState *pst) {
     Node *node = add(pst);
     for (;;) {
         if (consume_char(pst, '<')) {
@@ -134,7 +139,7 @@ Node *rel(ParseState *pst) {
 }
 
 /// add = mul (("+" | "-") mul)*
-Node *add(ParseState *pst) {
+static Node *add(ParseState *pst) {
     Node *node = mul(pst);
     for (;;) {
         if (consume_char(pst, '+')) {
@@ -148,7 +153,7 @@ Node *add(ParseState *pst) {
 }
 
 /// mul = unary (("*" | "/") unary)*
-Node *mul(ParseState *pst) {
+static Node *mul(ParseState *pst) {
     Node *node = unary(pst);
     for (;;) {
         if (consume_char(pst, '*')) {
@@ -164,7 +169,7 @@ Node *mul(ParseState *pst) {
 /// unary = ("+" | "-") unary | primary
 //
 // Plus operator can be used like `3 + +5` by design.
-Node *unary(ParseState *pst) {
+static Node *unary(ParseState *pst) {
     if (consume_char(pst, '+')) {
         return unary(pst);
     } else if (consume_char(pst, '-')) {
@@ -176,9 +181,9 @@ Node *unary(ParseState *pst) {
 }
 
 /// primary = num | "(" expr ")"
-Node *primary(ParseState *pst) {
+static Node *primary(ParseState *pst) {
     if (consume_char(pst, '(')) {
-        Node *node = expr(pst);
+        Node *node = parse_expr(pst);
         expect_char(pst, ')');
         return node;
     } else {

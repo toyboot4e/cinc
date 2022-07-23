@@ -14,6 +14,7 @@ struct ParseState {
 };
 
 ParseState pst_init(Token *tk, char *src);
+ParseState pst_from_source(char *src);
 
 typedef enum { // forward-declarations for enums are forbidden..
     // primitives
@@ -46,6 +47,6 @@ struct Node {
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
-Node *expr(ParseState *pst);
+Node *parse_expr(ParseState *pst);
 
 #endif

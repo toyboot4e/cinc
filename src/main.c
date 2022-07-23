@@ -19,9 +19,8 @@ int main(int argc, char **argv) {
     }
 
     char *src = argv[1];
-    Token *tk = tokenize(src);
-    ParseState pst = pst_init(tk, src);
-    Node *node = expr(&pst);
+    ParseState pst = pst_from_source(src);
+    Node *node = parse_expr(&pst);
 
     asm_header();
     asm_node(node);

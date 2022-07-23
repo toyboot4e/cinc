@@ -17,22 +17,19 @@ typedef enum {
     TK_EOF,
 } TokenKind;
 
-typedef struct Str Slice;
-
 /// A slice of a string
-struct Str {
+typedef struct {
     char *str;
     int len;
-};
+} Slice;
 
 typedef struct Token Token;
 
-/// A slice of source string
+/// Linked list of source slices
 struct Token {
     TokenKind kind;
     Slice slice;
-    /// Makes a linked list of parsed tokens. This is useful in C because we
-    /// don't have a generic vector type.
+    /// Never freed
     Token *next;
     // TODO: do we need this?
     int val; // if kind == TK_NUM
