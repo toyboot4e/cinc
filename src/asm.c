@@ -24,10 +24,11 @@ void asm_node(Node *node) {
 }
 
 static void gen_bin_node(Node *node) {
-    printf(" pop rdi\n");
-    printf(" pop rax\n");
     asm_node(node->lhs);
     asm_node(node->rhs);
+
+    printf(" pop rdi\n");
+    printf(" pop rax\n");
 
     switch (node->kind) {
     case ND_ADD:
