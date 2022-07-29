@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
 
     asm_header();
     asm_node(node);
-    printf(" pop rax\n");
-    printf(" ret\n");
+    printf("  pop rax\n");
+    printf("  ret\n");
 
     return 0;
 }
