@@ -4,23 +4,32 @@
 
 cd "$(dirname "$0")"
 
-MAIN_OBJ='./obj/cinc'
+TO_ASM='./obj/cinc'
 ROOT="$(pwd)"
+
+i_test=0
 
 # CAUTION: the expected value must be in [0, 255], i.e. the range of exit status
 assert() {
     expected="$1"
     input="$2"
 
-    "$MAIN_OBJ" "$input" > obj/tmp.s
+    asm="./obj/$i_test.s"
+    obj='./obj/tmp'
+
+    i_test=$((i_test+1))
+
+    # Generate assembly file
+    "$TO_ASM" "$input" > "$asm"
     status="$?"
     if [ $status -ne 0 ] ; then
-        echo "Failed to compile \`$input\` with error code \`$status\`";
+        echo "Failed to compile code \`$input\` with error code \`$status\`";
         exit 1
     fi
 
-    cc obj/tmp.s -o obj/tmp
-    ./obj/tmp
+    # Create machine code and run
+    cc "$asm" -o "$obj"
+    "$obj"
     actual="$?"
 
     if [ "$actual" = "$expected" ]; then
@@ -31,19 +40,16 @@ assert() {
     fi
 }
 
-assert 0 0
-assert 42 42
+assert 0 '0'
+assert 42 '42'
 
-# addition and substraction
-assert 21 "5+20-4"
+assert 21 '5+20-4'
+assert 41 ' 12 + 34 - 5 '
 
-# whitespaces (tokenizer)
-assert 41 " 12 + 34 - 5 "
+assert 47 '5 + 6 * 7'
+assert 15 '5 * (9 - 6)'
+assert 4 '(3 + 5) / 2'
 
-# multiplication and division
-assert 47 '5+6*7'
-assert 15 '5*(9-6)'
-assert 4 '(3+5)/2'
 
 # unary operator
 assert 15 '-(-3 * +5)'
