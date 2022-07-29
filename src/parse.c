@@ -123,14 +123,15 @@ static Node *eq(ParseState *pst) {
 static Node *rel(ParseState *pst) {
     Node *node = add(pst);
     for (;;) {
-        if (consume_char(pst, '<')) {
-            node = new_node_binary(ND_LT, node, add(pst));
-        } else if (consume_char(pst, '>')) {
-            node = new_node_binary(ND_GT, node, add(pst));
-        } else if (consume_str(pst, "<=")) {
+        // match onto longer words first!
+        if (consume_str(pst, "<=")) {
             node = new_node_binary(ND_LE, node, add(pst));
         } else if (consume_str(pst, ">=")) {
             node = new_node_binary(ND_GE, node, add(pst));
+        } else if (consume_char(pst, '<')) {
+            node = new_node_binary(ND_LT, node, add(pst));
+        } else if (consume_char(pst, '>')) {
+            node = new_node_binary(ND_GT, node, add(pst));
         } else {
             return node;
         }
