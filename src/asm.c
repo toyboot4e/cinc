@@ -44,8 +44,10 @@ static void gen_bin_node(Node *node) {
         printf(" idiv rdi\n");
         break;
     default:
-        fprintf(stderr,
-                "Tried to parse a binary node, where non-operator found\n");
+        fprintf(
+            stderr,
+            "Tried to parse a binary node, found non-operator (NodeKind: %d)\n",
+            node->kind);
         exit(1);
         break;
     }

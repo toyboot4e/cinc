@@ -28,4 +28,3 @@ void panic_at(char *loc, char *src, char *fmt, ...) {
     fprintf(stderr, "\n");
     exit(1);
 }
-

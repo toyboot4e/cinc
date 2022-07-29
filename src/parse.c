@@ -19,17 +19,16 @@ ParseState pst_init(Token *tk, char *src) {
 }
 
 ParseState pst_from_source(char *src) {
-  Token* tk = tokenize(src);
-  return pst_init(tk, src);
+    Token *tk = tokenize(src);
+    return pst_init(tk, src);
 }
 
-static void pst_inc(ParseState *pst) { pst->tk = pst->tk->next; }
+static void pst_inc(ParseState *pst) {
+    pst->tk = pst->tk->next;
+}
 
 // --------------------------------------------------------------------------------
 // Token readers
-//
-// All tokens are once toknized into a linked list and then read one by one by
-// parser. We read them using string. That's ok because `cinc` is only for C.
 
 bool consume_char(ParseState *pst, char c) {
     if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != c) {
