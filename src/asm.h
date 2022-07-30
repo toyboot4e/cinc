@@ -4,10 +4,10 @@
 #include "parse.h"
 
 /// Generates assembly header
-void asm_header();
+void write_asm_header();
 
 /// Generates assembly for a node
-void asm_node(Node *node);
+void write_asm_node(Node *node);
 
 #endif
 

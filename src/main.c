@@ -22,8 +22,8 @@ int main(int argc, char **argv) {
     ParseState pst = pst_from_source(src);
     Node *node = parse_expr(&pst);
 
-    asm_header();
-    asm_node(node);
+    write_asm_header();
+    write_asm_node(node);
     printf("  pop rax\n");
     printf("  ret\n");
 

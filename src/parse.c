@@ -92,27 +92,27 @@ Node *new_node_num(int val) {
 // --------------------------------------------------------------------------------
 // Parsers
 
-static Node *eq(ParseState *pst);
-static Node *rel(ParseState *pst);
-static Node *add(ParseState *pst);
-static Node *mul(ParseState *pst);
-static Node *unary(ParseState *pst);
-static Node *primary(ParseState *pst);
+static Node *parse_eq(ParseState *pst);
+static Node *parse_rel(ParseState *pst);
+static Node *parse_add(ParseState *pst);
+static Node *parse_mul(ParseState *pst);
+static Node *parse_unary(ParseState *pst);
+static Node *parse_primary(ParseState *pst);
 
 /// expr = equality
 Node *parse_expr(ParseState *pst) {
-    return eq(pst);
+    return parse_eq(pst);
     //
 }
 
 /// equality = relational ("==" relational | "!=" relational)*
-static Node *eq(ParseState *pst) {
-    Node *node = rel(pst);
+static Node *parse_eq(ParseState *pst) {
+    Node *node = parse_rel(pst);
     for (;;) {
         if (consume_str(pst, "==")) {
-            node = new_node_binary(ND_EQ, node, rel(pst));
+            node = new_node_binary(ND_EQ, node, parse_rel(pst));
         } else if (consume_str(pst, "!=")) {
-            node = new_node_binary(ND_NE, node, rel(pst));
+            node = new_node_binary(ND_NE, node, parse_rel(pst));
         } else {
             return node;
         }
@@ -120,18 +120,18 @@ static Node *eq(ParseState *pst) {
 }
 
 /// relational = add (("<" | "<=" | ">" | ">=") add)*
-static Node *rel(ParseState *pst) {
-    Node *node = add(pst);
+static Node *parse_rel(ParseState *pst) {
+    Node *node = parse_add(pst);
     for (;;) {
         // match onto longer words first!
         if (consume_str(pst, "<=")) {
-            node = new_node_binary(ND_LE, node, add(pst));
+            node = new_node_binary(ND_LE, node, parse_add(pst));
         } else if (consume_str(pst, ">=")) {
-            node = new_node_binary(ND_GE, node, add(pst));
+            node = new_node_binary(ND_GE, node, parse_add(pst));
         } else if (consume_char(pst, '<')) {
-            node = new_node_binary(ND_LT, node, add(pst));
+            node = new_node_binary(ND_LT, node, parse_add(pst));
         } else if (consume_char(pst, '>')) {
-            node = new_node_binary(ND_GT, node, add(pst));
+            node = new_node_binary(ND_GT, node, parse_add(pst));
         } else {
             return node;
         }
@@ -139,13 +139,13 @@ static Node *rel(ParseState *pst) {
 }
 
 /// add = mul (("+" | "-") mul)*
-static Node *add(ParseState *pst) {
-    Node *node = mul(pst);
+static Node *parse_add(ParseState *pst) {
+    Node *node = parse_mul(pst);
     for (;;) {
         if (consume_char(pst, '+')) {
-            node = new_node_binary(ND_ADD, node, mul(pst));
+            node = new_node_binary(ND_ADD, node, parse_mul(pst));
         } else if (consume_char(pst, '-')) {
-            node = new_node_binary(ND_SUB, node, mul(pst));
+            node = new_node_binary(ND_SUB, node, parse_mul(pst));
         } else {
             return node;
         }
@@ -153,13 +153,13 @@ static Node *add(ParseState *pst) {
 }
 
 /// mul = unary (("*" | "/") unary)*
-static Node *mul(ParseState *pst) {
-    Node *node = unary(pst);
+static Node *parse_mul(ParseState *pst) {
+    Node *node = parse_unary(pst);
     for (;;) {
         if (consume_char(pst, '*')) {
-            node = new_node_binary(ND_MUL, node, unary(pst));
+            node = new_node_binary(ND_MUL, node, parse_unary(pst));
         } else if (consume_char(pst, '/')) {
-            node = new_node_binary(ND_DIV, node, unary(pst));
+            node = new_node_binary(ND_DIV, node, parse_unary(pst));
         } else {
             return node;
         }
@@ -169,19 +169,19 @@ static Node *mul(ParseState *pst) {
 /// unary = ("+" | "-") unary | primary
 //
 // Plus operator can be used like `3 + +5` by design.
-static Node *unary(ParseState *pst) {
+static Node *parse_unary(ParseState *pst) {
     if (consume_char(pst, '+')) {
-        return unary(pst);
+        return parse_unary(pst);
     } else if (consume_char(pst, '-')) {
         // we treat it as (0 - primary)
-        return new_node_binary(ND_SUB, new_node_num(0), unary(pst));
+        return new_node_binary(ND_SUB, new_node_num(0), parse_unary(pst));
     } else {
-        return primary(pst);
+        return parse_primary(pst);
     }
 }
 
 /// primary = num | "(" expr ")"
-static Node *primary(ParseState *pst) {
+static Node *parse_primary(ParseState *pst) {
     if (consume_char(pst, '(')) {
         Node *node = parse_expr(pst);
         expect_char(pst, ')');

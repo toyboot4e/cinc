@@ -7,25 +7,25 @@
 
 #include "parse.h"
 
-void asm_header() {
+void write_asm_header() {
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
     printf("main:\n");
 }
 
-static void gen_bin_node(Node *node);
+static void write_bin_node(Node *node);
 
-void asm_node(Node *node) {
+void write_asm_node(Node *node) {
     if (node->kind == ND_NUM) {
         printf("  push %d\n", node->val);
         return;
     }
-    gen_bin_node(node);
+    write_bin_node(node);
 }
 
-static void gen_bin_node(Node *node) {
-    asm_node(node->lhs);
-    asm_node(node->rhs);
+static void write_bin_node(Node *node) {
+    write_asm_node(node->lhs);
+    write_asm_node(node->rhs);
 
     printf("  pop rdi\n");
     printf("  pop rax\n");
