@@ -1,0 +1,85 @@
+= cinc devlog
+:compilerbook: https://www.sigbus.info/compilerbook[compilerbook]
+
+In the {compilerbook}, you write a C compiler that emits x86-64 assembly in Intel syntax.
+
+== What I knew
+
+- BNF and recursive descent parser
+- Basics of a stack machine
+
+== Assembly language is the key
+
+If you can write an interpreter, the biggest issue is the assembly langauge! Let's learn by examples.
+
+=== `42` (step 2)
+
+- `rax` is a 64 bit register
+
+[source,nasm]
+----
+.intel_syntax noprefix
+.global main
+main:
+           ;  stack  rax
+  push 42  ;  [42]
+  pop rax  ;  []     42
+  ret      ;  returns `rax`
+----
+
+=== `5 * (9 - 6)` (step 5)
+
+
+- `rax` and `rdi` are 64 bit registers
+- `add`, `sub` and `imul` take two parameters (`dst`, `src`) as input and overwrites `dst` with the result
+
+
+
+[source,nasm]
+----
+.intel_syntax noprefix
+.global main
+main:
+                   ;  stack       rax   rdi
+  push 5           ;  [5]         -     -
+  push 9           ;  [5, 9]      -     -
+  push 6           ;  [5, 9, 6]   -     -
+  pop rdi          ;  [5, 9]      -     6
+  pop rax          ;  [5]         9     6
+  sub rax, rdi     ;  [5]         3     6
+  push rax         ;  [5, 3]      3     5
+  pop rdi          ;  [5]         3     3
+  pop rax          ;  []          5     3
+  imul rax, rdi    ;  []          15    3
+  push rax         ;  [15]        15    1
+  pop rax          ;  []          15    1
+  ret              ;  returns `rax`
+----
+
+Why do we have `push rax` and soon `pop rax` at the end? Because we evaluate an expression recursively and single-term evaluation works as the end point.
+
+=== `2 <= 1` (step 7)
+
+
+- `cmp` stores the result in _flag registers_
+- We can retrieve the comparison result with `set*` operation. For example, `setle` gets the result of `<=` operator (`0` if false `1` if true)
+
+[source,nasm]
+----
+.intel_syntax noprefix
+.global main
+main:
+                  ;  stack   rax  rdi flag
+  push 2          ;  [2]     -    -   -
+  push 1          ;  [2, 1]  -    -   -
+  pop rdi         ;  [2]     -    1   -
+  pop rax         ;  []      2    1   -
+  cmp rax, rdi    ;  []      2    1   (result)
+  setle al        ;  []      1    1   (result)   ;  Set the comparison result to `al` (alias to the lower 8 bits of `rax`)
+  movzb rax, al   ;  []      1    1   (result)   ;  Update `rax` (64 bits) with `al` (8 bits), so
+                  ;                    result    ;  the upper 54 bits of `rax` will be set to `8`.
+  push rax        ;  [1]     1    1   (result)
+  pop rax         ;  []      1    1   (result)
+  ret             ;  returns `rax`
+----
+

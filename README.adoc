@@ -6,6 +6,8 @@
 
 `cinc` is a hobby project to follow the {compilerbook} and to create a self-hosting compiler of the C programming language.
 
+- link:./devlog.adoc[devlog]
+
 == Setup (macOS)
 
 [source,sh]
