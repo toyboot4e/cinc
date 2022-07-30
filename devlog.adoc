@@ -12,7 +12,7 @@ In the {compilerbook}, you write a C compiler that emits x86-64 assembly in Inte
 
 If you can write an interpreter, the biggest issue is the assembly langauge! Let's learn by examples.
 
-=== `42` (step 2)
+=== Compile `42` (step 2)
 
 - `rax` is a 64 bit register
 
@@ -27,8 +27,7 @@ main:
   ret      ;  returns `rax`
 ----
 
-=== `5 * (9 - 6)` (step 5)
-
+=== Compile `5 * (9 - 6)` (step 5)
 
 - `rax` and `rdi` are 64 bit registers
 - `add`, `sub` and `imul` take two parameters (`dst`, `src`) as input and overwrites `dst` with the result
@@ -58,7 +57,7 @@ main:
 
 Why do we have `push rax` and soon `pop rax` at the end? Because we evaluate an expression recursively and single-term evaluation works as the end point.
 
-=== `2 <= 1` (step 7)
+=== Compile `2 <= 1` (step 7)
 
 
 - `cmp` stores the result in _flag registers_
