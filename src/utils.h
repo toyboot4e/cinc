@@ -1,4 +1,4 @@
-// † The utilities †
+//! Utilities
 
 #ifndef CINC_UTILS_H
 #define CINC_UTILS_H

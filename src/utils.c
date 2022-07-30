@@ -1,5 +1,3 @@
-// † The utilities †
-
 // TODO: rm unnecessary includes
 #include <ctype.h>
 #include <stdarg.h>

@@ -1,3 +1,5 @@
+//! Outputs x86-64 assembly in Intel syntax
+
 #ifndef CINC_CODEGEN_H
 #define CINC_CODEGEN_H
 

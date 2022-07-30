@@ -1,4 +1,4 @@
-//! The parser
+//! Converts [`Token`]s into [`Node`]s
 
 #ifndef CINC_PARSER_H
 #define CINC_PARSER_H

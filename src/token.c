@@ -1,8 +1,3 @@
-//! † The tokenizer † which slices input string
-//!
-//! Note that we won't free the allocated tokens because `cinc` is a short-lived
-//! program.
-
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>

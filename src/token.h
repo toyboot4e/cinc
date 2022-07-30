@@ -1,4 +1,4 @@
-//! † The tokenizer † which slices input string
+//! Converts string into [`Token`]s
 
 #ifndef CINC_TOKENIZER_H
 #define CINC_TOKENIZER_H
