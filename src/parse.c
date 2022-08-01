@@ -10,9 +10,10 @@
 #include "utils.h"
 
 ParseState pst_init(Token *tk, char *src) {
-    ParseState pst;
-    pst.tk = tk;
-    pst.src = src;
+    ParseState pst = {
+        .tk = tk,
+        .src = src,
+    };
     return pst;
 }
 
@@ -73,17 +74,21 @@ int expect_number(ParseState *pst) {
 
 Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
-    node->kind = kind;
-    node->val = -999; // FIXME:
-    node->lhs = lhs;
-    node->rhs = rhs;
+    *node = (Node){
+        .kind = kind,
+        .val = -999, // FIXME:
+        .lhs = lhs,
+        .rhs = rhs,
+    };
     return node;
 }
 
 Node *new_node_num(int val) {
     Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_NUM;
-    node->val = val;
+    *node = (Node){
+        .kind = ND_NUM,
+        .val = val,
+    };
     return node;
 }
 

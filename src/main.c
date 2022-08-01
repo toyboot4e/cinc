@@ -1,11 +1,11 @@
 //! cinc is a C compiler in C, which emits x86-64 assembly in Intel syntax
 
 // Style:
-// - Not `free` heap memories for simplicity
+// - Don't `free` heap memories for simplicity
 // - Don't use global variables
 
-#include "to_asm.h"
 #include "parse.h"
+#include "to_asm.h"
 #include "token.h"
 
 #include <stdio.h>

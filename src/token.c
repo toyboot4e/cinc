@@ -9,22 +9,24 @@
 #include "token.h"
 #include "utils.h"
 
-Token *new_token(TokenKind kind, char *str, int len, Token *cur) {
-    Token *t = calloc(1, sizeof(Token));
-    t->kind = kind;
-    t->slice = (Slice) { .str = str, .len = len };
-    cur->next = t;
-    return t;
+static Token *new_token(TokenKind kind, char *str, int len, Token *cur) {
+    Token *tk = calloc(1, sizeof(Token));
+    *tk = (Token){
+        .kind = kind,
+        .slice = (Slice){.str = str, .len = len},
+    };
+    cur->next = tk;
+    return tk;
 }
 
-char *skip_ws(char *p) {
+static char *skip_ws(char *p) {
     while (isspace(*p)) {
         p++;
     }
     return p;
 }
 
-bool str_starts_with(char *str, char *part) {
+static bool str_starts_with(char *str, char *part) {
     return memcmp(str, part, strlen(part)) == 0;
 }
 
@@ -32,7 +34,6 @@ Token *tokenize(char *src) {
     char *ptr = src;
 
     Token head;
-    head.next = NULL;
     Token *tk = &head;
 
     while (true) {
