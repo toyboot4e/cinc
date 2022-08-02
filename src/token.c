@@ -65,6 +65,11 @@ Token *tokenize(char *src) {
             continue;
         }
 
+        // identifier
+        if ('a' <= *ptr && *ptr <= 'z') {
+            tk = new_token(TK_IDENT, ptr, 1, tk);
+        }
+
         panic_at(ptr, src, "Invalid string for the tokenizer");
     }
 

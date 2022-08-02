@@ -17,8 +17,14 @@ ParseState pst_init(Token *tk, char *src);
 ParseState pst_from_source(char *src);
 
 typedef enum { // forward-declarations for enums are forbidden..
+    // statements
+    ND_ASSIGN,
+
     // primitives
     ND_NUM,
+
+    /// Local variable
+    ND_LVAR,
 
     // arithmetic operators
     ND_ADD,
@@ -42,6 +48,8 @@ struct Node {
     Node *lhs;
     Node *rhs;
     int val;
+    /// Offset of the local variable from the stack base pointer
+    int offset;
     /// Next program node
     Node *next;
 };

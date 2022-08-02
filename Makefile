@@ -20,6 +20,6 @@ test: ${MAIN_OBJ}
 clean:
 		rm -f $(MAIN_OBJ) obj/*.o obj/*~ obj/tmp*
 
-# doc: 
+# doc:
 
 .PHONY: test clean

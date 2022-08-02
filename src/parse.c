@@ -70,6 +70,15 @@ static bool consume_number(ParseState *pst) {
     return true;
 }
 
+static bool consume_ident(ParseState *pst) {
+    if (pst->tk->kind != TK_IDENT) {
+        return false;
+    }
+
+    pst_inc(pst);
+    return true;
+}
+
 // --------------------------------------------------------------------------------
 // Node
 
@@ -94,10 +103,21 @@ static Node *new_node_num(int val) {
     return node;
 }
 
+/// Left value (value that represents an address)
+static Node *new_node_lvar(char c) {
+    Node *node = calloc(1, sizeof(Node));
+    *node = (Node){
+        .kind = ND_LVAR,
+        .offset = (c - 'a') * 8,
+    };
+    return node;
+}
+
 // --------------------------------------------------------------------------------
 // Parsers
 
 Node *parse_expr(ParseState *pst);
+static Node *parse_assign(ParseState *pst);
 static Node *parse_eq(ParseState *pst);
 static Node *parse_rel(ParseState *pst);
 static Node *parse_add(ParseState *pst);
@@ -126,9 +146,19 @@ Node *parse_stmt(ParseState *pst) {
     return node;
 }
 
+/// expr = assign
 Node *parse_expr(ParseState *pst) {
-    return parse_eq(pst);
-    //
+    return parse_assign(pst);
+}
+
+/// assign = equality ("=" assign)*
+Node *parse_assign(ParseState *pst) {
+    Node *node = parse_eq(pst);
+    if (consume_str(pst, "=")) {
+        node = new_node_binary(ND_ASSIGN, node, parse_assign(pst));
+    }
+
+    return node;
 }
 
 /// equality = relational ("==" relational | "!=" relational)*
@@ -217,6 +247,11 @@ static Node *parse_primary(ParseState *pst) {
 
         if (consume_number(pst)) {
             return new_node_num(tk->val);
+        }
+
+        if (consume_ident(pst)) {
+            char c = pst->tk->slice.str[0];
+            return new_node_lvar(c);
         }
 
         // retrieve null-terminated string from the slice
