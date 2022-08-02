@@ -52,7 +52,8 @@ Token *tokenize(char *src) {
 
         // then single character tokens
         if (strchr("+-*/()<>=;", *ptr)) {
-            tk = new_token(TK_RESERVED, ptr++, 1, tk);
+            tk = new_token(TK_RESERVED, ptr, 1, tk);
+            ptr += 1;
             continue;
         }
 
@@ -67,7 +68,10 @@ Token *tokenize(char *src) {
 
         // identifier
         if ('a' <= *ptr && *ptr <= 'z') {
-            tk = new_token(TK_IDENT, ptr, 1, tk);
+            int len = 1;
+            tk = new_token(TK_IDENT, ptr, len, tk);
+            ptr += len;
+            continue;
         }
 
         panic_at(ptr, src, "Invalid string for the tokenizer");

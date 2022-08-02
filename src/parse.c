@@ -108,7 +108,8 @@ static Node *new_node_lvar(char c) {
     Node *node = calloc(1, sizeof(Node));
     *node = (Node){
         .kind = ND_LVAR,
-        .offset = (c - 'a') * 8,
+        // +1 means skipping the base pointer
+        .offset = (c - 'a' + 1) * 8,
     };
     return node;
 }
@@ -250,7 +251,7 @@ static Node *parse_primary(ParseState *pst) {
         }
 
         if (consume_ident(pst)) {
-            char c = pst->tk->slice.str[0];
+            char c = tk->slice.str[0];
             return new_node_lvar(c);
         }
 

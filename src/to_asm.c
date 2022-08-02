@@ -29,18 +29,23 @@ void write_asm_header() {
     printf("main:\n");
 }
 
-/// TODO: write comment
 void write_prologue() {
-    // add space for 26 variables
+    // save the last RBP
     printf("  push rbp\n");
+    // save the current RSP (which refers to the last RBP) to RBP
     printf("  mov rbp, rsp\n");
+    // add space for 26 variables
     printf("  sub rsp, 208\n");
+
+    printf("\n");
 }
 
-/// TODO: write comment
 void write_epilogue() {
-    // add space for 26 variables
+    printf("\n");
+
+    // go back to the last point
     printf("  mov rsp, rbp\n");
+    // now, [RSP] is the last RBP
     printf("  pop rbp\n");
     printf("  ret\n");
 }
@@ -55,12 +60,13 @@ void write_asm_node(Node *node) {
     write_bin_node(node);
 }
 
+/// Write left value (the address of the target value)
 void write_lval(Node *node) {
     if (node->kind != ND_LVAR) {
         panic("left value expected");
     }
 
-    // Load the local variable from the stack and push it back for temporary calculation
+    printf("  # lval\n");
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", node->offset);
     printf("  push rax\n");
@@ -72,7 +78,7 @@ static void write_bin_node(Node *node) {
         write_lval(node->lhs);
         write_bin_node(node->rhs);
 
-        // TODO: write comment
+        printf("  # assign\n");
         printf("  pop rdi\n");
         printf("  pop rax\n");
         printf("  mov [rax], rdi\n");
@@ -86,7 +92,7 @@ static void write_bin_node(Node *node) {
     case ND_LVAR:
         write_lval(node);
 
-        // TODO: write comment
+        printf("  # lvar (dereference the last lval)\n");
         printf("  pop rax\n");
         printf("  mov rax, [rax]\n");
         printf("  push rax\n");

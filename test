@@ -74,5 +74,9 @@ assert 0 '1>=2;'
 # multiple expressions
 assert 1 '3 + 4; 4 <= 6;'
 
+# one-character statement
+assert 12 'a = 10; a + 2;'
+assert 24 'a = 10; b = 12; a + b + 2;'
+
 echo 'all tests passed'
 
