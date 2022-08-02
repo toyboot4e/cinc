@@ -1,6 +1,7 @@
 ---
 BasedOnStyle: LLVM
 IndentWidth: 4
+ColumnLimit: 100
 AlignOperands: true
 AllowShortFunctionsOnASingleLine: Empty
 ---

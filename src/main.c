@@ -13,19 +13,14 @@
 
 int main(int argc, char **argv) {
     if (argc != 2) {
-        fprintf(stderr,
-                "Invalid args! `cinc` accepts one argument as an input.\n");
+        fprintf(stderr, "Invalid args! `cinc` accepts one argument as an input.\n");
         exit(1);
     }
 
     char *src = argv[1];
     ParseState pst = pst_from_source(src);
-    Node *node = parse_expr(&pst);
-
-    write_asm_header();
-    write_asm_node(node);
-    printf("  pop rax\n");
-    printf("  ret\n");
+    Node *nodes = parse_program(&pst);
+    write_program(nodes);
 
     return 0;
 }

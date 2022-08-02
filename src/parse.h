@@ -42,11 +42,12 @@ struct Node {
     Node *lhs;
     Node *rhs;
     int val;
+    /// Next program node
+    Node *next;
 };
 
-Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
-Node *new_node_num(int val);
-
+Node *parse_program(ParseState *pst);
+Node *parse_stmt(ParseState *pst);
 Node *parse_expr(ParseState *pst);
 
 #endif

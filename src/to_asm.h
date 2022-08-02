@@ -5,11 +5,19 @@
 
 #include "parse.h"
 
-/// Generates assembly header
+/// Outputs x86-64 assembly
+void write_program();
+
+/// Outputs assembly header
 void write_asm_header();
 
-/// Generates assembly for a node
+/// Outputs function prologue
+void write_prologue();
+
+/// Outputs function epilogue
+void write_epilogue();
+
+/// Outputs assembly for a node
 void write_asm_node(Node *node);
 
 #endif
-

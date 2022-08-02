@@ -6,11 +6,43 @@
 #include <string.h>
 
 #include "parse.h"
+#include "to_asm.h"
+#include "utils.h"
+
+void write_program(Node *nodes) {
+    write_asm_header();
+    write_prologue();
+
+    while (nodes) {
+        write_asm_node(nodes);
+        // pop last value on the stack
+        printf("  pop rax\n");
+        nodes = nodes->next;
+    }
+
+    write_epilogue();
+}
 
 void write_asm_header() {
     printf(".intel_syntax noprefix\n");
     printf(".global main\n");
     printf("main:\n");
+}
+
+/// TODO: write comment
+void write_prologue() {
+    // add space for 26 variables
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, 208\n");
+}
+
+/// TODO: write comment
+void write_epilogue() {
+    // add space for 26 variables
+    printf("  mov rsp, rbp\n");
+    printf("  pop rbp\n");
+    printf("  ret\n");
 }
 
 static void write_bin_node(Node *node);
@@ -24,6 +56,15 @@ void write_asm_node(Node *node) {
 }
 
 static void write_bin_node(Node *node) {
+    switch (node->kind) {
+    case ND_NUM:
+        printf("  push %d\n", node->val);
+        return;
+
+    default:
+        break;
+    }
+
     write_asm_node(node->lhs);
     write_asm_node(node->rhs);
 
@@ -31,6 +72,7 @@ static void write_bin_node(Node *node) {
     printf("  pop rax\n");
 
     switch (node->kind) {
+        // arithmetic operators
     case ND_ADD:
         printf("  add rax, rdi\n");
         break;
@@ -92,10 +134,8 @@ static void write_bin_node(Node *node) {
         break;
 
     default:
-        fprintf(
-            stderr,
-            "Tried to parse a binary node, found non-operator (NodeKind: %d)\n",
-            node->kind);
+        fprintf(stderr, "Tried to parse a binary node, found non-operator (NodeKind: %d)\n",
+                node->kind);
         exit(1);
         break;
     }

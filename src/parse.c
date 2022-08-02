@@ -29,7 +29,11 @@ static void pst_inc(ParseState *pst) {
 // --------------------------------------------------------------------------------
 // Token readers
 
-bool consume_char(ParseState *pst, char c) {
+static bool is_at_eof(ParseState *pst) {
+    return pst->tk->kind == TK_EOF;
+}
+
+static bool consume_char(ParseState *pst, char c) {
     if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != c) {
         return false;
     }
@@ -37,13 +41,19 @@ bool consume_char(ParseState *pst, char c) {
     return true;
 }
 
-bool consume_str(ParseState *pst, char *str) {
+static void expect_char(ParseState *pst, char op) {
+    if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != op) {
+        panic_at(pst->tk->slice.str, pst->src, "Expected a char '%c'", op);
+    }
+    pst_inc(pst);
+}
+
+static bool consume_str(ParseState *pst, char *str) {
     if (pst->tk->kind != TK_RESERVED) {
         return false;
     }
 
-    if (strlen(str) != pst->tk->slice.len ||
-        memcmp(pst->tk->slice.str, str, pst->tk->slice.len)) {
+    if (strlen(str) != pst->tk->slice.len || memcmp(pst->tk->slice.str, str, pst->tk->slice.len)) {
         return false;
     }
 
@@ -51,28 +61,19 @@ bool consume_str(ParseState *pst, char *str) {
     return true;
 }
 
-// Panics if it finds something other than the expected char
-void expect_char(ParseState *pst, char op) {
-    if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != op) {
-        panic_at(pst->tk->slice.str, pst->src, "Expected a char '%c'", op);
-    }
-    pst_inc(pst);
-}
-
-// Panics if it find something other than a number
-int expect_number(ParseState *pst) {
+static bool consume_number(ParseState *pst) {
     if (pst->tk->kind != TK_NUM) {
-        panic_at(pst->tk->slice.str, pst->src, "Expected a number");
+        return false;
     }
-    int val = pst->tk->val;
+
     pst_inc(pst);
-    return val;
+    return true;
 }
 
 // --------------------------------------------------------------------------------
 // Node
 
-Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
+static Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
     *node = (Node){
         .kind = kind,
@@ -83,7 +84,8 @@ Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
     return node;
 }
 
-Node *new_node_num(int val) {
+/// Number
+static Node *new_node_num(int val) {
     Node *node = calloc(1, sizeof(Node));
     *node = (Node){
         .kind = ND_NUM,
@@ -95,6 +97,7 @@ Node *new_node_num(int val) {
 // --------------------------------------------------------------------------------
 // Parsers
 
+Node *parse_expr(ParseState *pst);
 static Node *parse_eq(ParseState *pst);
 static Node *parse_rel(ParseState *pst);
 static Node *parse_add(ParseState *pst);
@@ -102,7 +105,27 @@ static Node *parse_mul(ParseState *pst);
 static Node *parse_unary(ParseState *pst);
 static Node *parse_primary(ParseState *pst);
 
-/// expr = equality
+/// program = stmt*
+Node *parse_program(ParseState *pst) {
+    Node *root = parse_stmt(pst);
+    Node *node = root;
+
+    // parse until EoF node
+    while (!is_at_eof(pst)) {
+        node->next = parse_stmt(pst);
+        node = node->next;
+    }
+
+    return root;
+}
+
+/// stmt = expr ";"
+Node *parse_stmt(ParseState *pst) {
+    Node *node = parse_expr(pst);
+    expect_char(pst, ';');
+    return node;
+}
+
 Node *parse_expr(ParseState *pst) {
     return parse_eq(pst);
     //
@@ -183,13 +206,28 @@ static Node *parse_unary(ParseState *pst) {
     }
 }
 
-/// primary = num | "(" expr ")"
+/// primary = (num | ident) | "(" expr ")"
 static Node *parse_primary(ParseState *pst) {
     if (consume_char(pst, '(')) {
         Node *node = parse_expr(pst);
         expect_char(pst, ')');
         return node;
     } else {
-        return new_node_num(expect_number(pst));
+        Token *tk = pst->tk;
+
+        if (consume_number(pst)) {
+            return new_node_num(tk->val);
+        }
+
+        // retrieve null-terminated string from the slice
+        int len = pst->tk->slice.len;
+        char *s = malloc(len + 1);
+        memcpy(s, pst->tk->slice.str, len);
+        s[len] = '\n';
+
+        panic_at(pst->tk->slice.str, pst->src, "Expected number or ident: %s", s);
+
+        // unreachable
+        return NULL;
     }
 }

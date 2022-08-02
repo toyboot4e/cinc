@@ -11,7 +11,7 @@
 #include <string.h>
 
 typedef enum {
-    /// Non-strict token. One of `+-/*()` or comparison.
+    /// One of `+-*/()<>=;` or comparison.
     TK_RESERVED,
     TK_NUM,
     TK_EOF,

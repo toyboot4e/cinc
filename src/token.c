@@ -51,7 +51,7 @@ Token *tokenize(char *src) {
         }
 
         // then single character tokens
-        if (strchr("+-*/()<>=", *ptr)) {
+        if (strchr("+-*/()<>=;", *ptr)) {
             tk = new_token(TK_RESERVED, ptr++, 1, tk);
             continue;
         }
