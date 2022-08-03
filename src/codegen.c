@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "codegen.h"
 #include "parse.h"
-#include "to_asm.h"
 #include "utils.h"
 
 void write_program(Scope scope) {

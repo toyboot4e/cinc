@@ -1,7 +1,7 @@
 //! Converts string into [`Token`]s
 
-#ifndef CINC_TOKENIZER_H
-#define CINC_TOKENIZER_H
+#ifndef CINC_TOKEN_H
+#define CINC_TOKEN_H
 
 #include <ctype.h>
 #include <stdarg.h>

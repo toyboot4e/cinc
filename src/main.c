@@ -4,8 +4,8 @@
 // - Don't `free` heap memories for simplicity
 // - Don't use global variables
 
+#include "codegen.h"
 #include "parse.h"
-#include "to_asm.h"
 #include "token.h"
 
 #include <stdio.h>
