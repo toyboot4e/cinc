@@ -114,62 +114,76 @@ static Node *new_node_lvar(char c) {
     return node;
 }
 
+LocalVar *findLVar(Slice slice, LocalVar *lvar) {
+    for (LocalVar *var = lvar; var; var = var->next) {
+        if (var->slice.str == slice.str && var->slice.len == slice.len) {
+            return var;
+        }
+    }
+
+    return NULL;
+}
+
 // --------------------------------------------------------------------------------
 // Parsers
 
-Node *parse_expr(ParseState *pst);
-static Node *parse_assign(ParseState *pst);
-static Node *parse_eq(ParseState *pst);
-static Node *parse_rel(ParseState *pst);
-static Node *parse_add(ParseState *pst);
-static Node *parse_mul(ParseState *pst);
-static Node *parse_unary(ParseState *pst);
-static Node *parse_primary(ParseState *pst);
+Node *parse_expr(ParseState *pst, Scope *scope);
+static Node *parse_assign(ParseState *pst, Scope *scope);
+static Node *parse_eq(ParseState *pst, Scope *scope);
+static Node *parse_rel(ParseState *pst, Scope *scope);
+static Node *parse_add(ParseState *pst, Scope *scope);
+static Node *parse_mul(ParseState *pst, Scope *scope);
+static Node *parse_unary(ParseState *pst, Scope *scope);
+static Node *parse_primary(ParseState *pst, Scope *scope);
 
 /// program = stmt*
-Node *parse_program(ParseState *pst) {
-    Node *root = parse_stmt(pst);
-    Node *node = root;
+Scope parse_program(ParseState *pst) {
+    Scope scope;
+
+    scope.node = parse_stmt(pst, &scope);
+    Node *last_node = scope.node;
 
     // parse until EoF node
     while (!is_at_eof(pst)) {
-        node->next = parse_stmt(pst);
-        node = node->next;
+        Node *next = parse_stmt(pst, &scope);
+
+        last_node->next = next;
+        last_node = next;
     }
 
-    return root;
+    return scope;
 }
 
 /// stmt = expr ";"
-Node *parse_stmt(ParseState *pst) {
-    Node *node = parse_expr(pst);
+Node *parse_stmt(ParseState *pst, Scope *scope) {
+    Node *node = parse_expr(pst, scope);
     expect_char(pst, ';');
     return node;
 }
 
 /// expr = assign
-Node *parse_expr(ParseState *pst) {
-    return parse_assign(pst);
+Node *parse_expr(ParseState *pst, Scope *scope) {
+    return parse_assign(pst, scope);
 }
 
 /// assign = equality ("=" assign)*
-Node *parse_assign(ParseState *pst) {
-    Node *node = parse_eq(pst);
+Node *parse_assign(ParseState *pst, Scope *scope) {
+    Node *node = parse_eq(pst, scope);
     if (consume_str(pst, "=")) {
-        node = new_node_binary(ND_ASSIGN, node, parse_assign(pst));
+        node = new_node_binary(ND_ASSIGN, node, parse_assign(pst, scope));
     }
 
     return node;
 }
 
 /// equality = relational ("==" relational | "!=" relational)*
-static Node *parse_eq(ParseState *pst) {
-    Node *node = parse_rel(pst);
+static Node *parse_eq(ParseState *pst, Scope *scope) {
+    Node *node = parse_rel(pst, scope);
     for (;;) {
         if (consume_str(pst, "==")) {
-            node = new_node_binary(ND_EQ, node, parse_rel(pst));
+            node = new_node_binary(ND_EQ, node, parse_rel(pst, scope));
         } else if (consume_str(pst, "!=")) {
-            node = new_node_binary(ND_NE, node, parse_rel(pst));
+            node = new_node_binary(ND_NE, node, parse_rel(pst, scope));
         } else {
             return node;
         }
@@ -177,18 +191,18 @@ static Node *parse_eq(ParseState *pst) {
 }
 
 /// relational = add (("<" | "<=" | ">" | ">=") add)*
-static Node *parse_rel(ParseState *pst) {
-    Node *node = parse_add(pst);
+static Node *parse_rel(ParseState *pst, Scope *scope) {
+    Node *node = parse_add(pst, scope);
     for (;;) {
         // match onto longer words first!
         if (consume_str(pst, "<=")) {
-            node = new_node_binary(ND_LE, node, parse_add(pst));
+            node = new_node_binary(ND_LE, node, parse_add(pst, scope));
         } else if (consume_str(pst, ">=")) {
-            node = new_node_binary(ND_GE, node, parse_add(pst));
+            node = new_node_binary(ND_GE, node, parse_add(pst, scope));
         } else if (consume_char(pst, '<')) {
-            node = new_node_binary(ND_LT, node, parse_add(pst));
+            node = new_node_binary(ND_LT, node, parse_add(pst, scope));
         } else if (consume_char(pst, '>')) {
-            node = new_node_binary(ND_GT, node, parse_add(pst));
+            node = new_node_binary(ND_GT, node, parse_add(pst, scope));
         } else {
             return node;
         }
@@ -196,13 +210,13 @@ static Node *parse_rel(ParseState *pst) {
 }
 
 /// add = mul (("+" | "-") mul)*
-static Node *parse_add(ParseState *pst) {
-    Node *node = parse_mul(pst);
+static Node *parse_add(ParseState *pst, Scope *scope) {
+    Node *node = parse_mul(pst, scope);
     for (;;) {
         if (consume_char(pst, '+')) {
-            node = new_node_binary(ND_ADD, node, parse_mul(pst));
+            node = new_node_binary(ND_ADD, node, parse_mul(pst, scope));
         } else if (consume_char(pst, '-')) {
-            node = new_node_binary(ND_SUB, node, parse_mul(pst));
+            node = new_node_binary(ND_SUB, node, parse_mul(pst, scope));
         } else {
             return node;
         }
@@ -210,13 +224,13 @@ static Node *parse_add(ParseState *pst) {
 }
 
 /// mul = unary (("*" | "/") unary)*
-static Node *parse_mul(ParseState *pst) {
-    Node *node = parse_unary(pst);
+static Node *parse_mul(ParseState *pst, Scope *scope) {
+    Node *node = parse_unary(pst, scope);
     for (;;) {
         if (consume_char(pst, '*')) {
-            node = new_node_binary(ND_MUL, node, parse_unary(pst));
+            node = new_node_binary(ND_MUL, node, parse_unary(pst, scope));
         } else if (consume_char(pst, '/')) {
-            node = new_node_binary(ND_DIV, node, parse_unary(pst));
+            node = new_node_binary(ND_DIV, node, parse_unary(pst, scope));
         } else {
             return node;
         }
@@ -226,21 +240,21 @@ static Node *parse_mul(ParseState *pst) {
 /// unary = ("+" | "-") unary | primary
 //
 // Plus operator can be used like `3 + +5` by design.
-static Node *parse_unary(ParseState *pst) {
+static Node *parse_unary(ParseState *pst, Scope *scope) {
     if (consume_char(pst, '+')) {
-        return parse_unary(pst);
+        return parse_unary(pst, scope);
     } else if (consume_char(pst, '-')) {
         // we treat it as (0 - primary)
-        return new_node_binary(ND_SUB, new_node_num(0), parse_unary(pst));
+        return new_node_binary(ND_SUB, new_node_num(0), parse_unary(pst, scope));
     } else {
-        return parse_primary(pst);
+        return parse_primary(pst, scope);
     }
 }
 
 /// primary = (num | ident) | "(" expr ")"
-static Node *parse_primary(ParseState *pst) {
+static Node *parse_primary(ParseState *pst, Scope *scope) {
     if (consume_char(pst, '(')) {
-        Node *node = parse_expr(pst);
+        Node *node = parse_expr(pst, scope);
         expect_char(pst, ')');
         return node;
     } else {

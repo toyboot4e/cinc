@@ -5,13 +5,11 @@
 
 #include "token.h"
 
-typedef struct ParseState ParseState;
-
 /// Parse state, often referred to as `pst`
-struct ParseState {
+typedef struct {
     Token *tk;
     char *src;
-};
+} ParseState;
 
 ParseState pst_init(Token *tk, char *src);
 ParseState pst_from_source(char *src);
@@ -54,8 +52,26 @@ struct Node {
     Node *next;
 };
 
-Node *parse_program(ParseState *pst);
-Node *parse_stmt(ParseState *pst);
-Node *parse_expr(ParseState *pst);
+typedef struct LocalVar LocalVar;
+
+struct LocalVar {
+    LocalVar *next;
+    Slice slice;
+    /// Offset from the base pointer
+    int offset;
+};
+
+LocalVar *findLVar(Slice slice, LocalVar *lvar);
+
+typedef struct {
+    /// Linked list of local variables
+    LocalVar *lvar;
+    /// Linked list of nodes
+    Node *node;
+} Scope;
+
+Scope parse_program(ParseState *pst);
+Node *parse_stmt(ParseState *pst, Scope *scope);
+Node *parse_expr(ParseState *pst, Scope *scope);
 
 #endif

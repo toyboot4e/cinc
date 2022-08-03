@@ -19,8 +19,8 @@ int main(int argc, char **argv) {
 
     char *src = argv[1];
     ParseState pst = pst_from_source(src);
-    Node *nodes = parse_program(&pst);
-    write_program(nodes);
+    Scope scope = parse_program(&pst);
+    write_program(scope);
 
     return 0;
 }

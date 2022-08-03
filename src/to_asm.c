@@ -9,15 +9,16 @@
 #include "to_asm.h"
 #include "utils.h"
 
-void write_program(Node *nodes) {
+void write_program(Scope scope) {
     write_asm_header();
     write_prologue();
 
-    while (nodes) {
-        write_asm_node(nodes);
+    Node *node = scope.node;
+    while (node) {
+        write_asm_node(node);
         // pop last value on the stack
         printf("  pop rax\n");
-        nodes = nodes->next;
+        node = node->next;
     }
 
     write_epilogue();
@@ -29,7 +30,7 @@ void write_asm_header() {
     printf("main:\n");
 }
 
-void write_prologue() {
+void write_prologue(Scope scope) {
     // save the last RBP
     printf("  push rbp\n");
     // save the current RSP (which refers to the last RBP) to RBP
@@ -40,7 +41,7 @@ void write_prologue() {
     printf("\n");
 }
 
-void write_epilogue() {
+void write_epilogue(Scope scope) {
     printf("\n");
 
     // go back to the last point

@@ -6,7 +6,7 @@
 #include "parse.h"
 
 /// Outputs x86-64 assembly
-void write_program();
+void write_program(Scope scope);
 
 /// Outputs assembly header
 void write_asm_header();
