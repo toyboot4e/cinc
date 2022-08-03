@@ -17,6 +17,7 @@ ParseState pst_from_source(char *src);
 typedef enum { // forward-declarations for enums are forbidden..
     // statements
     ND_ASSIGN,
+    ND_RETURN,
 
     // primitives
     ND_NUM,

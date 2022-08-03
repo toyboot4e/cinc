@@ -34,6 +34,15 @@ static bool is_at_eof(ParseState *pst) {
 }
 
 /// Consumes a reserved token of a character
+static bool consume_kind(ParseState *pst, TokenKind kind) {
+    if (pst->tk->kind == kind) {
+        pst_inc(pst);
+        return true;
+    }
+    return false;
+}
+
+/// Consumes a reserved token of a character
 static bool consume_char(ParseState *pst, char c) {
     if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != c) {
         return false;
@@ -132,7 +141,8 @@ static LocalVar *find_or_alloc_lvar(Scope *scope, Slice slice) {
 // --------------------------------------------------------------------------------
 // Node constructors
 
-static Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
+/// Just allocates a new node
+static Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
     *node = (Node){
         .kind = kind,
@@ -197,10 +207,22 @@ Scope parse_program(ParseState *pst) {
 }
 
 /// stmt = expr ";"
+///      | "return" expr;
 Node *parse_stmt(ParseState *pst, Scope *scope) {
-    Node *node = parse_expr(pst, scope);
-    expect_char(pst, ';');
-    return node;
+    if (consume_kind(pst, TK_RETURN)) {
+        // return statement
+        Node *ret = new_node(ND_RETURN, NULL, NULL);
+        ret->lhs = parse_expr(pst, scope);
+        expect_char(pst, ';');
+
+        return ret;
+    } else {
+        // expression statement
+        Node *node = parse_expr(pst, scope);
+        expect_char(pst, ';');
+
+        return node;
+    }
 }
 
 /// expr = assign
@@ -212,7 +234,7 @@ Node *parse_expr(ParseState *pst, Scope *scope) {
 Node *parse_assign(ParseState *pst, Scope *scope) {
     Node *node = parse_eq(pst, scope);
     if (consume_word(pst, "=")) {
-        node = new_node_binary(ND_ASSIGN, node, parse_assign(pst, scope));
+        node = new_node(ND_ASSIGN, node, parse_assign(pst, scope));
     }
 
     return node;
@@ -223,9 +245,9 @@ static Node *parse_eq(ParseState *pst, Scope *scope) {
     Node *node = parse_rel(pst, scope);
     for (;;) {
         if (consume_word(pst, "==")) {
-            node = new_node_binary(ND_EQ, node, parse_rel(pst, scope));
+            node = new_node(ND_EQ, node, parse_rel(pst, scope));
         } else if (consume_word(pst, "!=")) {
-            node = new_node_binary(ND_NE, node, parse_rel(pst, scope));
+            node = new_node(ND_NE, node, parse_rel(pst, scope));
         } else {
             return node;
         }
@@ -238,13 +260,13 @@ static Node *parse_rel(ParseState *pst, Scope *scope) {
     for (;;) {
         // match onto longer words first!
         if (consume_word(pst, "<=")) {
-            node = new_node_binary(ND_LE, node, parse_add(pst, scope));
+            node = new_node(ND_LE, node, parse_add(pst, scope));
         } else if (consume_word(pst, ">=")) {
-            node = new_node_binary(ND_GE, node, parse_add(pst, scope));
+            node = new_node(ND_GE, node, parse_add(pst, scope));
         } else if (consume_char(pst, '<')) {
-            node = new_node_binary(ND_LT, node, parse_add(pst, scope));
+            node = new_node(ND_LT, node, parse_add(pst, scope));
         } else if (consume_char(pst, '>')) {
-            node = new_node_binary(ND_GT, node, parse_add(pst, scope));
+            node = new_node(ND_GT, node, parse_add(pst, scope));
         } else {
             return node;
         }
@@ -256,9 +278,9 @@ static Node *parse_add(ParseState *pst, Scope *scope) {
     Node *node = parse_mul(pst, scope);
     for (;;) {
         if (consume_char(pst, '+')) {
-            node = new_node_binary(ND_ADD, node, parse_mul(pst, scope));
+            node = new_node(ND_ADD, node, parse_mul(pst, scope));
         } else if (consume_char(pst, '-')) {
-            node = new_node_binary(ND_SUB, node, parse_mul(pst, scope));
+            node = new_node(ND_SUB, node, parse_mul(pst, scope));
         } else {
             return node;
         }
@@ -270,9 +292,9 @@ static Node *parse_mul(ParseState *pst, Scope *scope) {
     Node *node = parse_unary(pst, scope);
     for (;;) {
         if (consume_char(pst, '*')) {
-            node = new_node_binary(ND_MUL, node, parse_unary(pst, scope));
+            node = new_node(ND_MUL, node, parse_unary(pst, scope));
         } else if (consume_char(pst, '/')) {
-            node = new_node_binary(ND_DIV, node, parse_unary(pst, scope));
+            node = new_node(ND_DIV, node, parse_unary(pst, scope));
         } else {
             return node;
         }
@@ -287,7 +309,7 @@ static Node *parse_unary(ParseState *pst, Scope *scope) {
         return parse_unary(pst, scope);
     } else if (consume_char(pst, '-')) {
         // we treat it as (0 - primary)
-        return new_node_binary(ND_SUB, new_node_num(0), parse_unary(pst, scope));
+        return new_node(ND_SUB, new_node_num(0), parse_unary(pst, scope));
     } else {
         return parse_primary(pst, scope);
     }
