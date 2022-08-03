@@ -97,6 +97,11 @@ Token *tokenize(char *src) {
             int len = read_ident(ptr);
             tk = alloc_next_token(TK_IDENT, ptr, len, tk);
             ptr += len;
+
+            if (slice_str_eq(tk->slice, "return")) {
+                tk->kind = TK_RETURN;
+            }
+
             continue;
         }
 

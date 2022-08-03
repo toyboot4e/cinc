@@ -33,6 +33,10 @@ bool slice_eq(Slice a, Slice b) {
     return a.len == b.len && memcmp(a.str, b.str, a.len) == 0;
 }
 
+bool slice_str_eq(Slice a, char *s) {
+    return a.len == strlen(s) && memcmp(a.str, s, a.len) == 0;
+}
+
 char *slice_to_string(Slice slice) {
     int len = slice.len;
 

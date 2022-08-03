@@ -13,6 +13,7 @@ typedef struct {
 } Slice;
 
 bool slice_eq(Slice a, Slice b);
+bool slice_str_eq(Slice a, char *s);
 char *slice_to_string(Slice s);
 
 #endif
