@@ -81,5 +81,8 @@ assert 24 'a = 10; b = 12; a + b + 2;'
 # multi-character statements
 assert 6 'a_var = 1; b_var = 2; a_var + 3 + b_var;'
 
+# return statement
+assert 3 'return 3; 5;'
+
 echo 'all tests passed'
 

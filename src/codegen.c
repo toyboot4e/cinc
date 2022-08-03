@@ -32,11 +32,10 @@ void write_asm_header() {
 
 void write_prologue(Scope scope) {
     printf("  # prologue\n");
-    // save the last RBP
+
+    // push BSP to the linked list
     printf("  push rbp\n");
-    // save the current RSP (which refers to the last RBP) to RBP
     printf("  mov rbp, rsp\n");
-    // add space for base pointer and local variables
     int size = scope_size(scope);
     printf("  sub rsp, %d\n", size);
 
@@ -45,11 +44,10 @@ void write_prologue(Scope scope) {
 
 void write_epilogue(Scope scope) {
     printf("\n");
-
     printf("  # epilogue\n");
-    // go back to the last point
+
+    // pop BSP of the linked list
     printf("  mov rsp, rbp\n");
-    // now, [RSP] is the last RBP
     printf("  pop rbp\n");
     printf("  ret\n");
 }
@@ -64,7 +62,7 @@ void write_asm_node(Node *node) {
     write_bin_node(node);
 }
 
-/// Write left value (the address of the target value)
+/// Write the local varialbe7s address as left value
 void write_lval(Node *node) {
     if (node->kind != ND_LVAR) {
         panic("left value expected");
@@ -87,6 +85,17 @@ static void write_bin_node(Node *node) {
         printf("  pop rax\n");
         printf("  mov [rax], rdi\n");
         printf("  push rdi\n");
+        return;
+
+    case ND_RETURN:
+        write_bin_node(node->lhs);
+        printf("  pop rax\n");
+
+        // pop the linked list of base pointers
+        // (same as function epilogue)
+        printf("  mov rsp, rbp\n");
+        printf("  pop rbp\n");
+        printf("  ret\n");
         return;
 
     case ND_NUM:
