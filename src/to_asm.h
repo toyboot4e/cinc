@@ -12,10 +12,10 @@ void write_program(Scope scope);
 void write_asm_header();
 
 /// Outputs function prologue
-void write_prologue();
+void write_prologue(Scope scope);
 
 /// Outputs function epilogue
-void write_epilogue();
+void write_epilogue(Scope scope);
 
 /// Outputs assembly for a node
 void write_asm_node(Node *node);

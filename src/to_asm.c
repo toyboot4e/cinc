@@ -11,7 +11,7 @@
 
 void write_program(Scope scope) {
     write_asm_header();
-    write_prologue();
+    write_prologue(scope);
 
     Node *node = scope.node;
     while (node) {
@@ -21,7 +21,7 @@ void write_program(Scope scope) {
         node = node->next;
     }
 
-    write_epilogue();
+    write_epilogue(scope);
 }
 
 void write_asm_header() {
@@ -31,12 +31,14 @@ void write_asm_header() {
 }
 
 void write_prologue(Scope scope) {
+    printf("  # prologue\n");
     // save the last RBP
     printf("  push rbp\n");
     // save the current RSP (which refers to the last RBP) to RBP
     printf("  mov rbp, rsp\n");
-    // add space for 26 variables
-    printf("  sub rsp, 208\n");
+    // add space for base pointer and local variables
+    int size = scope_size(scope);
+    printf("  sub rsp, %d\n", size);
 
     printf("\n");
 }
@@ -44,6 +46,7 @@ void write_prologue(Scope scope) {
 void write_epilogue(Scope scope) {
     printf("\n");
 
+    printf("  # epilogue\n");
     // go back to the last point
     printf("  mov rsp, rbp\n");
     // now, [RSP] is the last RBP
@@ -79,7 +82,7 @@ static void write_bin_node(Node *node) {
         write_lval(node->lhs);
         write_bin_node(node->rhs);
 
-        printf("  # assign\n");
+        printf("  # * assign\n");
         printf("  pop rdi\n");
         printf("  pop rax\n");
         printf("  mov [rax], rdi\n");

@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils.h"
+
 typedef enum {
     /// One of `+-*/()<>=;` or comparison.
     TK_RESERVED,
@@ -17,12 +19,6 @@ typedef enum {
     TK_NUM,
     TK_EOF,
 } TokenKind;
-
-/// A slice of a string
-typedef struct {
-    char *str;
-    int len;
-} Slice;
 
 typedef struct Token Token;
 

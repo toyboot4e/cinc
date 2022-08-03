@@ -33,6 +33,7 @@ static bool is_at_eof(ParseState *pst) {
     return pst->tk->kind == TK_EOF;
 }
 
+/// Consumes a reserved token of a character
 static bool consume_char(ParseState *pst, char c) {
     if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != c) {
         return false;
@@ -48,7 +49,8 @@ static void expect_char(ParseState *pst, char op) {
     pst_inc(pst);
 }
 
-static bool consume_str(ParseState *pst, char *str) {
+/// Consumes a reserved token of a word
+static bool consume_word(ParseState *pst, char *str) {
     if (pst->tk->kind != TK_RESERVED) {
         return false;
     }
@@ -80,7 +82,55 @@ static bool consume_ident(ParseState *pst) {
 }
 
 // --------------------------------------------------------------------------------
-// Node
+// Scope
+
+int scope_size(Scope scope) {
+    if (scope.lvar) {
+        // offset + variable size
+        return scope.lvar->offset + 8;
+    } else {
+        // always jump over the base pointer
+        return 8;
+    }
+}
+
+LocalVar *find_lvar(LocalVar *lvars, Slice slice) {
+    for (LocalVar *v = lvars; v; v = v->next) {
+        if (slice_eq(v->slice, slice)) {
+            return v;
+        }
+    }
+
+    return NULL;
+}
+
+/// Create new local variable and push it onto the list
+static void push_lvar(Scope *scope, Slice slice) {
+    int offset = scope_size(*scope);
+
+    LocalVar *root = NULL;
+    if (scope->lvar) {
+        root = scope->lvar;
+    }
+
+    LocalVar *new_root = calloc(1, sizeof(LocalVar));
+    *new_root = (LocalVar){.next = root, .slice = slice, .offset = offset};
+
+    scope->lvar = new_root;
+}
+
+static LocalVar *find_or_alloc_lvar(Scope *scope, Slice slice) {
+    LocalVar *lvar = find_lvar(scope->lvar, slice);
+    if (lvar) {
+        return lvar;
+    }
+
+    push_lvar(scope, slice);
+    return scope->lvar;
+}
+
+// --------------------------------------------------------------------------------
+// Node constructors
 
 static Node *new_node_binary(NodeKind kind, Node *lhs, Node *rhs) {
     Node *node = calloc(1, sizeof(Node));
@@ -103,29 +153,21 @@ static Node *new_node_num(int val) {
     return node;
 }
 
-/// Left value (value that represents an address)
-static Node *new_node_lvar(char c) {
+/// Creates local variable modifying the scope
+static Node *new_node_lvar(Slice slice, Scope *scope) {
+    LocalVar *lvar = find_or_alloc_lvar(scope, slice);
+
     Node *node = calloc(1, sizeof(Node));
     *node = (Node){
         .kind = ND_LVAR,
-        // +1 means skipping the base pointer
-        .offset = (c - 'a' + 1) * 8,
+        .offset = lvar->offset,
     };
+
     return node;
 }
 
-LocalVar *findLVar(Slice slice, LocalVar *lvar) {
-    for (LocalVar *var = lvar; var; var = var->next) {
-        if (var->slice.str == slice.str && var->slice.len == slice.len) {
-            return var;
-        }
-    }
-
-    return NULL;
-}
-
 // --------------------------------------------------------------------------------
-// Parsers
+// Parser
 
 Node *parse_expr(ParseState *pst, Scope *scope);
 static Node *parse_assign(ParseState *pst, Scope *scope);
@@ -169,7 +211,7 @@ Node *parse_expr(ParseState *pst, Scope *scope) {
 /// assign = equality ("=" assign)*
 Node *parse_assign(ParseState *pst, Scope *scope) {
     Node *node = parse_eq(pst, scope);
-    if (consume_str(pst, "=")) {
+    if (consume_word(pst, "=")) {
         node = new_node_binary(ND_ASSIGN, node, parse_assign(pst, scope));
     }
 
@@ -180,9 +222,9 @@ Node *parse_assign(ParseState *pst, Scope *scope) {
 static Node *parse_eq(ParseState *pst, Scope *scope) {
     Node *node = parse_rel(pst, scope);
     for (;;) {
-        if (consume_str(pst, "==")) {
+        if (consume_word(pst, "==")) {
             node = new_node_binary(ND_EQ, node, parse_rel(pst, scope));
-        } else if (consume_str(pst, "!=")) {
+        } else if (consume_word(pst, "!=")) {
             node = new_node_binary(ND_NE, node, parse_rel(pst, scope));
         } else {
             return node;
@@ -195,9 +237,9 @@ static Node *parse_rel(ParseState *pst, Scope *scope) {
     Node *node = parse_add(pst, scope);
     for (;;) {
         // match onto longer words first!
-        if (consume_str(pst, "<=")) {
+        if (consume_word(pst, "<=")) {
             node = new_node_binary(ND_LE, node, parse_add(pst, scope));
-        } else if (consume_str(pst, ">=")) {
+        } else if (consume_word(pst, ">=")) {
             node = new_node_binary(ND_GE, node, parse_add(pst, scope));
         } else if (consume_char(pst, '<')) {
             node = new_node_binary(ND_LT, node, parse_add(pst, scope));
@@ -265,16 +307,11 @@ static Node *parse_primary(ParseState *pst, Scope *scope) {
         }
 
         if (consume_ident(pst)) {
-            char c = tk->slice.str[0];
-            return new_node_lvar(c);
+            return new_node_lvar(tk->slice, scope);
         }
 
-        // retrieve null-terminated string from the slice
-        int len = pst->tk->slice.len;
-        char *s = malloc(len + 1);
-        memcpy(s, pst->tk->slice.str, len);
-        s[len] = '\n';
-
+        // Panic:
+        char *s = slice_to_string(pst->tk->slice);
         panic_at(pst->tk->slice.str, pst->src, "Expected number or ident: %s", s);
 
         // unreachable

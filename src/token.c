@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -9,7 +10,7 @@
 #include "token.h"
 #include "utils.h"
 
-static Token *new_token(TokenKind kind, char *str, int len, Token *cur) {
+static Token *alloc_next_token(TokenKind kind, char *str, int len, Token *cur) {
     Token *tk = calloc(1, sizeof(Token));
     *tk = (Token){
         .kind = kind,
@@ -30,6 +31,27 @@ static bool str_starts_with(char *str, char *part) {
     return memcmp(str, part, strlen(part)) == 0;
 }
 
+static bool is_ident_body(char c) {
+    return isalpha(c) || isdigit(c) || c == '_';
+}
+
+/// alpha (alpha | digit | _)*
+static int read_ident(char *start) {
+    assert(isalpha(*start));
+
+    char *end = start + 1;
+    while (end) {
+        if (is_ident_body(*end)) {
+            end += 1;
+            continue;
+        }
+
+        break;
+    }
+
+    return end - start;
+}
+
 Token *tokenize(char *src) {
     char *ptr = src;
 
@@ -45,21 +67,21 @@ Token *tokenize(char *src) {
         // we have to check longer tokens first
         if (str_starts_with(ptr, "==") || str_starts_with(ptr, "!=") ||
             str_starts_with(ptr, "<=") || str_starts_with(ptr, ">=")) {
-            tk = new_token(TK_RESERVED, ptr, 2, tk);
+            tk = alloc_next_token(TK_RESERVED, ptr, 2, tk);
             ptr += 2;
             continue;
         }
 
         // then single character tokens
         if (strchr("+-*/()<>=;", *ptr)) {
-            tk = new_token(TK_RESERVED, ptr, 1, tk);
+            tk = alloc_next_token(TK_RESERVED, ptr, 1, tk);
             ptr += 1;
             continue;
         }
 
         // number
         if (isdigit(*ptr)) {
-            tk = new_token(TK_NUM, ptr, 0, tk);
+            tk = alloc_next_token(TK_NUM, ptr, 0, tk);
             char *anchor = ptr;
             tk->val = strtol(ptr, &ptr, 10);
             tk->slice.len = ptr - anchor;
@@ -67,9 +89,9 @@ Token *tokenize(char *src) {
         }
 
         // identifier
-        if ('a' <= *ptr && *ptr <= 'z') {
-            int len = 1;
-            tk = new_token(TK_IDENT, ptr, len, tk);
+        if (isalpha(*ptr)) {
+            int len = read_ident(ptr);
+            tk = alloc_next_token(TK_IDENT, ptr, len, tk);
             ptr += len;
             continue;
         }
@@ -77,6 +99,6 @@ Token *tokenize(char *src) {
         panic_at(ptr, src, "Invalid string for the tokenizer");
     }
 
-    new_token(TK_EOF, ptr, 0, tk);
+    alloc_next_token(TK_EOF, ptr, 0, tk);
     return head.next;
 }

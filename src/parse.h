@@ -45,8 +45,9 @@ struct Node {
     NodeKind kind;
     Node *lhs;
     Node *rhs;
+    /// (ND_NUM) Value
     int val;
-    /// Offset of the local variable from the stack base pointer
+    /// (ND_LVAR) Byte offset of the local variable starting from the stack base pointer
     int offset;
     /// Next program node
     Node *next;
@@ -57,11 +58,11 @@ typedef struct LocalVar LocalVar;
 struct LocalVar {
     LocalVar *next;
     Slice slice;
-    /// Offset from the base pointer
+    /// Byte offset of the local variable starting from the stack base pointer
     int offset;
 };
 
-LocalVar *findLVar(Slice slice, LocalVar *lvar);
+LocalVar *find_lvar(LocalVar *lvar, Slice slice);
 
 typedef struct {
     /// Linked list of local variables
@@ -69,6 +70,9 @@ typedef struct {
     /// Linked list of nodes
     Node *node;
 } Scope;
+
+/// Returns 8 byte + sum of local variable sizes
+int scope_size(Scope scope);
 
 Scope parse_program(ParseState *pst);
 Node *parse_stmt(ParseState *pst, Scope *scope);
