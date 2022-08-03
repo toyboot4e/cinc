@@ -31,13 +31,17 @@ static bool str_starts_with(char *str, char *part) {
     return memcmp(str, part, strlen(part)) == 0;
 }
 
+static bool is_ident_head(char c) {
+    return isalpha(c) || c == '_';
+}
+
 static bool is_ident_body(char c) {
     return isalpha(c) || isdigit(c) || c == '_';
 }
 
 /// alpha (alpha | digit | _)*
 static int read_ident(char *start) {
-    assert(isalpha(*start));
+    assert(is_ident_head(*start));
 
     char *end = start + 1;
     while (end) {
@@ -89,7 +93,7 @@ Token *tokenize(char *src) {
         }
 
         // identifier
-        if (isalpha(*ptr)) {
+        if (is_ident_head(*ptr)) {
             int len = read_ident(ptr);
             tk = alloc_next_token(TK_IDENT, ptr, len, tk);
             ptr += len;
