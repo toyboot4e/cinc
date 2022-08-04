@@ -207,22 +207,38 @@ Scope parse_program(ParseState *pst) {
 }
 
 /// stmt = expr ";"
-///      | "return" expr;
+///      | "return" expr ";"
+///      | "if" stmt ("else" stmt)? ";"
 Node *parse_stmt(ParseState *pst, Scope *scope) {
+    // return statement
     if (consume_kind(pst, TK_RETURN)) {
-        // return statement
         Node *ret = new_node(ND_RETURN, NULL, NULL);
         ret->lhs = parse_expr(pst, scope);
         expect_char(pst, ';');
 
         return ret;
-    } else {
-        // expression statement
-        Node *node = parse_expr(pst, scope);
-        expect_char(pst, ';');
-
-        return node;
     }
+
+    // if statement
+    if (consume_kind(pst, TK_IF)) {
+        Node *if_ = new_node(ND_IF, NULL, NULL);
+        expect_char(pst, '(');
+        if_->cond = parse_expr(pst, scope);
+        expect_char(pst, ')');
+        if_->then = parse_stmt(pst, scope);
+
+        if (consume_kind(pst, TK_ELSE)) {
+            if_->else_ = parse_stmt(pst, scope);
+        }
+
+        return if_;
+    }
+
+    // expression statement
+    Node *expr = parse_expr(pst, scope);
+    expect_char(pst, ';');
+
+    return expr;
 }
 
 /// expr = assign

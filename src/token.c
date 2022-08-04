@@ -98,8 +98,17 @@ Token *tokenize(char *src) {
             tk = alloc_next_token(TK_IDENT, ptr, len, tk);
             ptr += len;
 
+            // overwrite the token kind for keywords
             if (slice_str_eq(tk->slice, "return")) {
                 tk->kind = TK_RETURN;
+            }
+
+            if (slice_str_eq(tk->slice, "if")) {
+                tk->kind = TK_IF;
+            }
+
+            if (slice_str_eq(tk->slice, "else")) {
+                tk->kind = TK_ELSE;
             }
 
             continue;

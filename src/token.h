@@ -18,6 +18,8 @@ typedef enum {
     TK_IDENT,
     TK_NUM,
     TK_RETURN,
+    TK_IF,
+    TK_ELSE,
     TK_EOF,
 } TokenKind;
 

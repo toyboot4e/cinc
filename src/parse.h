@@ -18,6 +18,7 @@ typedef enum { // forward-declarations for enums are forbidden..
     // statements
     ND_ASSIGN,
     ND_RETURN,
+    ND_IF,
 
     // primitives
     ND_NUM,
@@ -52,6 +53,10 @@ struct Node {
     int offset;
     /// Next program node
     Node *next;
+    /// (ND_IF)
+    Node *cond;
+    Node *then;
+    Node *else_;
 };
 
 typedef struct LocalVar LocalVar;

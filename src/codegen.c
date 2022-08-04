@@ -9,6 +9,8 @@
 #include "parse.h"
 #include "utils.h"
 
+// TODO: detect invalid pop
+
 void write_program(Scope scope) {
     write_asm_header();
     write_prologue(scope);
@@ -16,8 +18,6 @@ void write_program(Scope scope) {
     Node *node = scope.node;
     while (node) {
         write_asm_node(node);
-        // pop last value on the stack
-        printf("  pop rax\n");
         node = node->next;
     }
 
@@ -52,14 +52,14 @@ void write_epilogue(Scope scope) {
     printf("  ret\n");
 }
 
-static void write_bin_node(Node *node);
+static void write_any(Node *node);
 
 void write_asm_node(Node *node) {
     if (node->kind == ND_NUM) {
         printf("  push %d\n", node->val);
         return;
     }
-    write_bin_node(node);
+    write_any(node);
 }
 
 /// Write the local varialbe7s address as left value
@@ -74,11 +74,14 @@ void write_lval(Node *node) {
     printf("  push rax\n");
 }
 
-static void write_bin_node(Node *node) {
+/// Sequential number for unique label names
+int gSeq = 0;
+
+static void write_any(Node *node) {
     switch (node->kind) {
     case ND_ASSIGN:
         write_lval(node->lhs);
-        write_bin_node(node->rhs);
+        write_any(node->rhs);
 
         printf("  # * assign\n");
         printf("  pop rdi\n");
@@ -88,14 +91,58 @@ static void write_bin_node(Node *node) {
         return;
 
     case ND_RETURN:
-        write_bin_node(node->lhs);
+        write_any(node->lhs);
         printf("  pop rax\n");
 
-        // pop the linked list of base pointers
-        // (same as function epilogue)
+        // write function prologue
+        // (jumping to function epilogue also works)
         printf("  mov rsp, rbp\n");
         printf("  pop rbp\n");
         printf("  ret\n");
+        return;
+
+    case ND_IF:
+        int seq = gSeq++;
+
+        if (node->else_) {
+            // if then else
+            printf("  # if else\n");
+            write_any(node->cond);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+
+            // goto else, goto end
+            printf("  je .Lelse%d\n", seq);
+
+            // then
+            write_any(node->then);
+            printf("  jmp .Lend%d\n", seq);
+
+            // else
+            printf(".Lelse%d:\n", seq);
+            write_any(node->else_);
+            printf("  jmp .Lend%d\n", seq);
+
+            // end
+            printf(".Lend%d:\n", seq);
+        } else {
+            // if then no else
+            printf("  # if\n");
+            write_any(node->cond);
+
+            // goto else
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je .Lend%d\n", seq);
+
+            // then
+            write_any(node->then);
+            printf("  jmp .Lend%d\n", seq);
+
+            // end
+            printf(".Lend%d:\n", seq);
+        }
+
         return;
 
     case ND_NUM:
@@ -115,6 +162,7 @@ static void write_bin_node(Node *node) {
         break;
     }
 
+    // binary expressions
     write_asm_node(node->lhs);
     write_asm_node(node->rhs);
 
