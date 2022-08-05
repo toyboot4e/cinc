@@ -92,7 +92,7 @@ Token *tokenize(char *src) {
             continue;
         }
 
-        // identifier
+        // identifier or keyword
         if (is_ident_head(*ptr)) {
             int len = read_ident(ptr);
             tk = alloc_next_token(TK_IDENT, ptr, len, tk);
@@ -113,6 +113,10 @@ Token *tokenize(char *src) {
 
             if (slice_str_eq(tk->slice, "while")) {
                 tk->kind = TK_WHILE;
+            }
+
+            if (slice_str_eq(tk->slice, "for")) {
+                tk->kind = TK_FOR;
             }
 
             continue;

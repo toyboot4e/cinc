@@ -20,6 +20,7 @@ typedef enum { // forward-declarations for enums are forbidden..
     ND_RETURN,
     ND_IF,
     ND_WHILE,
+    ND_FOR,
 
     // primitives
     ND_NUM,
@@ -55,18 +56,23 @@ struct Node {
     /// (Binary)
     Node *rhs;
 
-    /// (ND_NUM) Value
+    /// (Number) Value
     int val;
 
-    /// (ND_LVAR) Byte offset of the local variable starting from the stack base pointer
+    /// (Local variable) Byte offset of the local variable starting from the stack base pointer
     int offset;
 
-    /// (ND_IF, ND_WHILE)
+    /// (`if`, `while`, `for`)
     Node *cond;
-    /// (ND_IF, ND_WHILE)
+    /// (`if`, `while`, `for`)
     Node *then;
-    /// (ND_IF)
+    /// (`if`)
     Node *else_;
+
+    /// (`for`)
+    Node *for_init;
+    /// (`for`)
+    Node *for_inc;
 };
 
 typedef struct LocalVar LocalVar;

@@ -156,6 +156,24 @@ static void write_any(Node *node) {
         return;
     }
 
+    case ND_FOR: {
+        int seq = gSeq++;
+
+        write_any(node->for_init);
+        printf(".Lloop_for%d:\n", seq);
+
+        write_any(node->cond);
+        printf("  cmp rax, 0\n");
+        printf("  je .Lend_for%d\n", seq);
+
+        write_any(node->for_inc);
+        write_any(node->then);
+        printf("  jmp .Lloop_for%d\n", seq);
+
+        printf(".Lend_for%d:\n", seq);
+        return;
+    }
+
     case ND_NUM:
         printf("  push %d\n", node->val);
         return;
