@@ -14,7 +14,6 @@
 void write_program(Scope scope) {
     write_asm_header();
 
-    printf("  # prologue\n");
     write_prologue(scope);
 
     for (Node *node = scope.node; node; node = node->next) {
@@ -34,19 +33,19 @@ void write_asm_header() {
 
 void write_prologue(Scope scope) {
     // push BSP to the linked list
-    printf("  push rbp\n");
-    printf("  mov rbp, rsp\n");
+    printf("  # prologue\n");
+    printf("    push rbp\n");
+    printf("    mov rbp, rsp\n");
     int size = scope_size(scope);
-    printf("  sub rsp, %d\n", size);
-
+    printf("    sub rsp, %d\n", size);
     printf("\n");
 }
 
 void write_epilogue() {
     // pop BSP of the linked list
-    printf("  mov rsp, rbp\n");
-    printf("  pop rbp\n");
-    printf("  ret\n");
+    printf("    mov rsp, rbp\n");
+    printf("    pop rbp\n");
+    printf("    ret\n");
 }
 
 static void write_any(Node *node);
@@ -65,10 +64,10 @@ static void write_addr(Node *node) {
         panic("left value expected");
     }
 
-    printf("  # address\n");
-    printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", node->offset);
-    printf("  push rax\n");
+    printf("  # push address\n");
+    printf("    mov rax, rbp\n");
+    printf("    sub rax, %d\n", node->offset);
+    printf("    push rax\n");
 }
 
 /// Sequential number for unique label names
@@ -81,10 +80,10 @@ static void write_any(Node *node) {
         write_any(node->rhs);
 
         printf("  # assign\n");
-        printf("  pop rdi\n");
-        printf("  pop rax\n");
-        printf("  mov [rax], rdi\n");
-        printf("  push rdi\n");
+        printf("    pop rdi\n");
+        printf("    pop rax\n");
+        printf("    mov [rax], rdi\n");
+        printf("    push rdi\n");
         return;
 
     case ND_RETURN:
@@ -92,6 +91,7 @@ static void write_any(Node *node) {
         printf("  pop rax\n");
 
         // jumping to function epilogue also works
+        printf("  # return (embedded epilogue)\n");
         write_epilogue();
         return;
 
@@ -161,13 +161,13 @@ static void write_any(Node *node) {
         return;
 
     case ND_LVAR:
-        printf("  # local variable (address + dereference)\n");
+        printf("  # local variable (push address + dereference rax)\n");
         write_addr(node);
 
-        printf("  # dereference\n");
-        printf("  pop rax\n");
-        printf("  mov rax, [rax]\n");
-        printf("  push rax\n");
+        printf("  # dereference rax\n");
+        printf("    pop rax\n");
+        printf("    mov rax, [rax]\n");
+        printf("    push rax\n");
         return;
 
     default:
@@ -196,51 +196,58 @@ static void write_any(Node *node) {
         break;
 
     case ND_DIV:
-        printf("  cqo\n");
-        printf("  idiv rdi\n");
+        printf("  # /\n");
+        printf("    cqo\n");
+        printf("    idiv rdi\n");
         break;
 
         // comparison operators
     case ND_EQ:
         // ==
-        printf("  cmp rax, rdi\n");
-        printf("  sete al\n");
-        printf("  movzb rax, al\n");
+        printf("  # ==\n");
+        printf("    cmp rax, rdi\n");
+        printf("    sete al\n");
+        printf("    movzb rax, al\n");
         break;
 
     case ND_NE:
         // !=
-        printf("  cmp rax, rdi\n");
-        printf("  setne al\n");
-        printf("  movzb rax, al\n");
+        printf("  # !=\n");
+        printf("    cmp rax, rdi\n");
+        printf("    setne al\n");
+        printf("    movzb rax, al\n");
         break;
 
     case ND_LT:
         // <
-        printf("  cmp rax, rdi\n");
-        printf("  setl al\n");
-        printf("  movzb rax, al\n");
+        printf("  # <\n");
+        printf("    cmp rax, rdi\n");
+        printf("    setl al\n");
+        printf("    movzb rax, al\n");
         break;
 
     case ND_LE:
         // <=
-        printf("  cmp rax, rdi\n");
-        printf("  setle al\n");
-        printf("  movzb rax, al\n");
+        printf("  # <=\n");
+        printf("    cmp rax, rdi\n");
+        printf("    setle al\n");
+        printf("    movzb rax, al\n");
         break;
 
     case ND_GT:
         // >
-        printf("  cmp rdi, rax\n");
-        printf("  setl al\n");
-        printf("  movzb rax, al\n");
+        printf("  # >\n");
+        printf("    cmp rdi, rax\n");
+        printf("    setl al\n");
+        printf("    movzb rax, al\n");
         break;
 
     case ND_GE:
         // >=
-        printf("  cmp rdi, rax\n");
-        printf("  setle al\n");
-        printf("  movzb rax, al\n");
+        printf("  # >=\n");
+        printf("    cmp rdi, rax\n");
+        printf("    setle al\n");
+        printf("    movzb rax, al\n");
         break;
 
     default:
