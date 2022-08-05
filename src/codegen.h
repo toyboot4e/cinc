@@ -15,7 +15,7 @@ void write_asm_header();
 void write_prologue(Scope scope);
 
 /// Outputs function epilogue
-void write_epilogue(Scope scope);
+void write_epilogue();
 
 /// Outputs assembly for a node
 void write_asm_node(Node *node);

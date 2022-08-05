@@ -13,15 +13,17 @@
 
 void write_program(Scope scope) {
     write_asm_header();
+
+    printf("  # prologue\n");
     write_prologue(scope);
 
-    Node *node = scope.node;
-    while (node) {
+    for (Node *node = scope.node; node; node = node->next) {
         write_asm_node(node);
-        node = node->next;
     }
 
-    write_epilogue(scope);
+    printf("\n");
+    printf("  # epilogue\n");
+    write_epilogue();
 }
 
 void write_asm_header() {
@@ -31,8 +33,6 @@ void write_asm_header() {
 }
 
 void write_prologue(Scope scope) {
-    printf("  # prologue\n");
-
     // push BSP to the linked list
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
@@ -42,10 +42,7 @@ void write_prologue(Scope scope) {
     printf("\n");
 }
 
-void write_epilogue(Scope scope) {
-    printf("\n");
-    printf("  # epilogue\n");
-
+void write_epilogue() {
     // pop BSP of the linked list
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
@@ -56,19 +53,19 @@ static void write_any(Node *node);
 
 void write_asm_node(Node *node) {
     if (node->kind == ND_NUM) {
+        // TODO: Pop the value if it's not used by a statement
         printf("  push %d\n", node->val);
         return;
     }
     write_any(node);
 }
 
-/// Write the local varialbe7s address as left value
-void write_lval(Node *node) {
+static void write_addr(Node *node) {
     if (node->kind != ND_LVAR) {
         panic("left value expected");
     }
 
-    printf("  # lval\n");
+    printf("  # address\n");
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", node->offset);
     printf("  push rax\n");
@@ -80,10 +77,10 @@ int gSeq = 0;
 static void write_any(Node *node) {
     switch (node->kind) {
     case ND_ASSIGN:
-        write_lval(node->lhs);
+        write_addr(node->lhs);
         write_any(node->rhs);
 
-        printf("  # * assign\n");
+        printf("  # assign\n");
         printf("  pop rdi\n");
         printf("  pop rax\n");
         printf("  mov [rax], rdi\n");
@@ -94,11 +91,8 @@ static void write_any(Node *node) {
         write_any(node->lhs);
         printf("  pop rax\n");
 
-        // write function prologue
-        // (jumping to function epilogue also works)
-        printf("  mov rsp, rbp\n");
-        printf("  pop rbp\n");
-        printf("  ret\n");
+        // jumping to function epilogue also works
+        write_epilogue();
         return;
 
     case ND_IF: {
@@ -167,9 +161,10 @@ static void write_any(Node *node) {
         return;
 
     case ND_LVAR:
-        write_lval(node);
+        printf("  # local variable (address + dereference)\n");
+        write_addr(node);
 
-        printf("  # lvar (dereference the last lval)\n");
+        printf("  # dereference\n");
         printf("  pop rax\n");
         printf("  mov rax, [rax]\n");
         printf("  push rax\n");
