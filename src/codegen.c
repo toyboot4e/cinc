@@ -101,7 +101,7 @@ static void write_any(Node *node) {
         printf("  ret\n");
         return;
 
-    case ND_IF:
+    case ND_IF: {
         int seq = gSeq++;
 
         if (node->else_) {
@@ -116,15 +116,15 @@ static void write_any(Node *node) {
 
             // then
             write_any(node->then);
-            printf("  jmp .Lend%d\n", seq);
+            printf("  jmp .Lend_if%d\n", seq);
 
             // else
             printf(".Lelse%d:\n", seq);
             write_any(node->else_);
-            printf("  jmp .Lend%d\n", seq);
+            printf("  jmp .Lend_if%d\n", seq);
 
             // end
-            printf(".Lend%d:\n", seq);
+            printf(".Lend_if%d:\n", seq);
         } else {
             // if then no else
             printf("  # if\n");
@@ -133,17 +133,34 @@ static void write_any(Node *node) {
             // goto else
             printf("  pop rax\n");
             printf("  cmp rax, 0\n");
-            printf("  je .Lend%d\n", seq);
+            printf("  je .Lend_if%d\n", seq);
 
             // then
             write_any(node->then);
-            printf("  jmp .Lend%d\n", seq);
+            printf("  jmp .Lend_if%d\n", seq);
 
             // end
-            printf(".Lend%d:\n", seq);
+            printf(".Lend_if%d:\n", seq);
         }
 
         return;
+    }
+
+    case ND_WHILE: {
+        int seq = gSeq++;
+
+        printf(".Lloop_while%d:\n", seq);
+        write_any(node->cond);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je .Lend_while%d\n", seq);
+
+        write_any(node->then);
+        printf("  jmp .Lloop_while%d\n", seq);
+
+        printf(".Lend_while%d:\n", seq);
+        return;
+    }
 
     case ND_NUM:
         printf("  push %d\n", node->val);

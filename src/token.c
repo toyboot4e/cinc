@@ -111,6 +111,10 @@ Token *tokenize(char *src) {
                 tk->kind = TK_ELSE;
             }
 
+            if (slice_str_eq(tk->slice, "while")) {
+                tk->kind = TK_WHILE;
+            }
+
             continue;
         }
 

@@ -209,6 +209,7 @@ Scope parse_program(ParseState *pst) {
 /// stmt = expr ";"
 ///      | "return" expr ";"
 ///      | "if" stmt ("else" stmt)? ";"
+///      | "while" "(" expr ")" stmt
 Node *parse_stmt(ParseState *pst, Scope *scope) {
     // return statement
     if (consume_kind(pst, TK_RETURN)) {
@@ -232,6 +233,17 @@ Node *parse_stmt(ParseState *pst, Scope *scope) {
         }
 
         return if_;
+    }
+
+    // while statement
+    if (consume_kind(pst, TK_WHILE)) {
+        Node *while_ = new_node(ND_WHILE, NULL, NULL);
+        expect_char(pst, '(');
+        while_->cond = parse_expr(pst, scope);
+        expect_char(pst, ')');
+        while_->then = parse_stmt(pst, scope);
+
+        return while_;
     }
 
     // expression statement

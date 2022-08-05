@@ -19,6 +19,7 @@ typedef enum { // forward-declarations for enums are forbidden..
     ND_ASSIGN,
     ND_RETURN,
     ND_IF,
+    ND_WHILE,
 
     // primitives
     ND_NUM,
@@ -45,17 +46,26 @@ typedef struct Node Node;
 
 struct Node {
     NodeKind kind;
-    Node *lhs;
-    Node *rhs;
-    /// (ND_NUM) Value
-    int val;
-    /// (ND_LVAR) Byte offset of the local variable starting from the stack base pointer
-    int offset;
+
     /// Next program node
     Node *next;
-    /// (ND_IF)
+
+    /// (Binary)
+    Node *lhs;
+    /// (Binary)
+    Node *rhs;
+
+    /// (ND_NUM) Value
+    int val;
+
+    /// (ND_LVAR) Byte offset of the local variable starting from the stack base pointer
+    int offset;
+
+    /// (ND_IF, ND_WHILE)
     Node *cond;
+    /// (ND_IF, ND_WHILE)
     Node *then;
+    /// (ND_IF)
     Node *else_;
 };
 
