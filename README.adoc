@@ -4,7 +4,7 @@
 :chibicc: https://github.com/rui314/chibicc[chibicc]
 :godbolt: https://godbolt.org/[Compiler Explorer (godbolt)]
 
-`cinc` is a hobby project to follow the {compilerbook} and to create a self-hosting compiler of the C programming language.
+`cinc` is a hobby project to follow the {compilerbook}. The goal is to learn basic static typing. Self-hosting compiler is out of my scope.
 
 - link:./devlog.adoc[devlog]
 
