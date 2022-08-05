@@ -77,7 +77,7 @@ Token *tokenize(char *src) {
         }
 
         // then single character tokens
-        if (strchr("+-*/()<>=;", *ptr)) {
+        if (strchr("+-*/()<>=;{}", *ptr)) {
             tk = alloc_next_token(TK_RESERVED, ptr, 1, tk);
             ptr += 1;
             continue;

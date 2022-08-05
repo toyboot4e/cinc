@@ -21,6 +21,7 @@ typedef enum { // forward-declarations for enums are forbidden..
     ND_IF,
     ND_WHILE,
     ND_FOR,
+    ND_BLOCK,
 
     // primitives
     ND_NUM,
@@ -73,6 +74,9 @@ struct Node {
     Node *for_init;
     /// (`for`)
     Node *for_inc;
+
+    /// (Block)
+    Node *body;
 };
 
 typedef struct LocalVar LocalVar;

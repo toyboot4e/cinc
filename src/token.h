@@ -13,7 +13,7 @@
 #include "utils.h"
 
 typedef enum {
-    /// One of `+-*/()<>=;` or comparison.
+    /// One of `+-*/()=;{}` or a comparison operator
     TK_RESERVED,
     TK_IDENT,
     TK_NUM,

@@ -29,6 +29,7 @@ static void pst_inc(ParseState *pst) {
 // --------------------------------------------------------------------------------
 // Token readers
 
+/// True on EoF token
 static bool is_at_eof(ParseState *pst) {
     return pst->tk->kind == TK_EOF;
 }
@@ -51,6 +52,7 @@ static bool consume_char(ParseState *pst, char c) {
     return true;
 }
 
+/// Expects a reserved token of a character
 static void expect_char(ParseState *pst, char op) {
     if (pst->tk->kind != TK_RESERVED || pst->tk->slice.str[0] != op) {
         panic_at(pst->tk->slice.str, pst->src, "Expected a char '%c'", op);
@@ -211,6 +213,7 @@ Scope parse_program(ParseState *pst) {
 ///      | "if" stmt ("else" stmt)? ";"
 ///      | "while" "(" expr ")" stmt
 ///      | "for" "(" stmt stmt  ")" stmt
+///      | "{" stmt* "}"
 Node *parse_stmt(ParseState *pst, Scope *scope) {
     // return statement
     if (consume_kind(pst, TK_RETURN)) {
@@ -262,6 +265,22 @@ Node *parse_stmt(ParseState *pst, Scope *scope) {
         for_->then = parse_stmt(pst, scope);
 
         return for_;
+    }
+
+    // compound statement (code block)
+    if (consume_char(pst, '{')) {
+        Node *block = new_node(ND_BLOCK, NULL, NULL);
+
+        Node list;
+        Node *tail = &list;
+
+        while (!consume_char(pst, '}')) {
+            tail->next = parse_stmt(pst, scope);
+            tail = tail->next;
+        }
+
+        block->body = list.next;
+        return block;
     }
 
     // expression statement

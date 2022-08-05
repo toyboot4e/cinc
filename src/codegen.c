@@ -174,6 +174,13 @@ static void write_any(Node *node) {
         return;
     }
 
+    case ND_BLOCK: {
+        for (Node *n = node->body; n; n = n->next) {
+            write_any(n);
+        }
+        return;
+    };
+
     case ND_NUM:
         printf("  push %d\n", node->val);
         return;
