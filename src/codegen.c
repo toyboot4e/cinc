@@ -9,7 +9,11 @@
 #include "parse.h"
 #include "utils.h"
 
-// TODO: detect invalid pop
+/// - `discard`: pops the last value if true
+static void write_any(Node *node, bool discard);
+
+static const bool DISCARD = true;
+static const bool KEEP = false;
 
 void write_program(Scope scope) {
     write_asm_header();
@@ -17,7 +21,7 @@ void write_program(Scope scope) {
     write_prologue(scope);
 
     for (Node *node = scope.node; node; node = node->next) {
-        write_asm_node(node);
+        write_any(node, DISCARD);
     }
 
     printf("\n");
@@ -48,15 +52,11 @@ void write_epilogue() {
     printf("    ret\n");
 }
 
-static void write_any(Node *node);
-
-void write_asm_node(Node *node) {
-    if (node->kind == ND_NUM) {
-        // TODO: Pop the value if it's not used by a statement
-        printf("  push %d\n", node->val);
-        return;
+static void discard_if(bool b) {
+    if (b) {
+        printf("  # discard\n");
+        printf("    pop rax\n");
     }
-    write_any(node);
 }
 
 static void write_addr(Node *node) {
@@ -73,21 +73,23 @@ static void write_addr(Node *node) {
 /// Sequential number for unique label names
 int gSeq = 0;
 
-static void write_any(Node *node) {
+static void write_any(Node *node, bool discard) {
     switch (node->kind) {
     case ND_ASSIGN:
         write_addr(node->lhs);
-        write_any(node->rhs);
+        write_any(node->rhs, KEEP);
 
         printf("  # assign\n");
         printf("    pop rdi\n");
         printf("    pop rax\n");
         printf("    mov [rax], rdi\n");
         printf("    push rdi\n");
+
+        discard_if(discard);
         return;
 
     case ND_RETURN:
-        write_any(node->lhs);
+        write_any(node->lhs, KEEP);
         printf("  pop rax\n");
 
         // jumping to function epilogue also works
@@ -101,7 +103,7 @@ static void write_any(Node *node) {
         if (node->else_) {
             // if then else
             printf("  # if else\n");
-            write_any(node->cond);
+            write_any(node->cond, KEEP);
             printf("  pop rax\n");
             printf("  cmp rax, 0\n");
 
@@ -109,12 +111,12 @@ static void write_any(Node *node) {
             printf("  je .Lelse%d\n", seq);
 
             // then
-            write_any(node->then);
+            write_any(node->then, DISCARD);
             printf("  jmp .Lend_if%d\n", seq);
 
             // else
             printf(".Lelse%d:\n", seq);
-            write_any(node->else_);
+            write_any(node->else_, DISCARD);
             printf("  jmp .Lend_if%d\n", seq);
 
             // end
@@ -122,7 +124,7 @@ static void write_any(Node *node) {
         } else {
             // if then no else
             printf("  # if\n");
-            write_any(node->cond);
+            write_any(node->cond, KEEP);
 
             // goto else
             printf("  pop rax\n");
@@ -130,7 +132,7 @@ static void write_any(Node *node) {
             printf("  je .Lend_if%d\n", seq);
 
             // then
-            write_any(node->then);
+            write_any(node->then, DISCARD);
             printf("  jmp .Lend_if%d\n", seq);
 
             // end
@@ -144,12 +146,12 @@ static void write_any(Node *node) {
         int seq = gSeq++;
 
         printf(".Lloop_while%d:\n", seq);
-        write_any(node->cond);
+        write_any(node->cond, KEEP);
         printf("  pop rax\n");
         printf("  cmp rax, 0\n");
         printf("  je .Lend_while%d\n", seq);
 
-        write_any(node->then);
+        write_any(node->then, DISCARD);
         printf("  jmp .Lloop_while%d\n", seq);
 
         printf(".Lend_while%d:\n", seq);
@@ -159,15 +161,15 @@ static void write_any(Node *node) {
     case ND_FOR: {
         int seq = gSeq++;
 
-        write_any(node->for_init);
+        write_any(node->for_init, DISCARD);
         printf(".Lloop_for%d:\n", seq);
 
-        write_any(node->cond);
+        write_any(node->cond, KEEP);
         printf("  cmp rax, 0\n");
         printf("  je .Lend_for%d\n", seq);
 
-        write_any(node->for_inc);
-        write_any(node->then);
+        write_any(node->for_inc, DISCARD);
+        write_any(node->then, DISCARD);
         printf("  jmp .Lloop_for%d\n", seq);
 
         printf(".Lend_for%d:\n", seq);
@@ -176,14 +178,11 @@ static void write_any(Node *node) {
 
     case ND_BLOCK: {
         for (Node *n = node->body; n; n = n->next) {
-            write_any(n);
+            write_any(n, DISCARD);
         }
+
         return;
     };
-
-    case ND_NUM:
-        printf("  push %d\n", node->val);
-        return;
 
     case ND_LVAR:
         printf("  # local variable (push address + dereference rax)\n");
@@ -193,6 +192,14 @@ static void write_any(Node *node) {
         printf("    pop rax\n");
         printf("    mov rax, [rax]\n");
         printf("    push rax\n");
+
+        discard_if(discard);
+        return;
+
+    case ND_NUM:
+        printf("  push %d\n", node->val);
+
+        discard_if(discard);
         return;
 
     default:
@@ -200,8 +207,8 @@ static void write_any(Node *node) {
     }
 
     // binary expressions
-    write_asm_node(node->lhs);
-    write_asm_node(node->rhs);
+    write_any(node->lhs, false);
+    write_any(node->rhs, false);
 
     printf("  pop rdi\n");
     printf("  pop rax\n");
@@ -283,4 +290,5 @@ static void write_any(Node *node) {
     }
 
     printf("  push rax\n");
+    discard_if(discard);
 }
