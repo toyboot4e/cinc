@@ -380,28 +380,38 @@ static Node *parse_unary(ParseState *pst, Scope *scope) {
     }
 }
 
-/// primary = (num | ident) | "(" expr ")"
+/// primary = (num | ident | call) | "(" expr ")"
+/// call = ident "(" args ")"
+/// args =
 static Node *parse_primary(ParseState *pst, Scope *scope) {
     if (consume_char(pst, '(')) {
         Node *node = parse_expr(pst, scope);
         expect_char(pst, ')');
         return node;
-    } else {
-        Token *tk = pst->tk;
+    }
 
-        if (consume_number(pst)) {
-            return new_node_num(tk->val);
-        }
+    Token *tk = pst->tk;
 
-        if (consume_ident(pst)) {
+    if (consume_number(pst)) {
+        return new_node_num(tk->val);
+    }
+
+    if (consume_ident(pst)) {
+        if (consume_char(pst, '(')) {
+            Node *call = new_node(ND_CALL, NULL, NULL);
+            call->fname = tk->slice;
+
+            expect_char(pst, ')');
+            return call;
+        } else {
             return new_node_lvar(tk->slice, scope);
         }
-
-        // Panic:
-        char *s = slice_to_string(pst->tk->slice);
-        panic_at(pst->tk->slice.str, pst->src, "Expected number or ident: %s", s);
-
-        // unreachable
-        return NULL;
     }
+
+    // Panic:
+    char *s = slice_to_string(pst->tk->slice);
+    panic_at(pst->tk->slice.str, pst->src, "Expected number or ident: %s", s);
+
+    // unreachable, just for the analyzer
+    return NULL;
 }

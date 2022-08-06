@@ -9,6 +9,13 @@ ROOT="$(pwd)"
 
 i_test=0
 
+asset=obj/asset.o
+cat <<EOF | gcc -xc -c -o "$asset" -
+int ret3() { return 3; }
+int ret5() { return 5; }
+EOF
+
+
 # CAUTION: the expected value must be in [0, 255], i.e. the range of exit status
 assert() {
     expected="$1"
@@ -28,7 +35,7 @@ assert() {
     fi
 
     # Create machine code and run
-    cc "$asm" -o "$obj"
+    gcc -static "$asm" "$asset" -o "$obj"
     "$obj"
     actual="$?"
 
@@ -104,6 +111,9 @@ assert 3 'if (0) { a = 2; return a; } else { b = 3; return b; }'
 # TODO: handle block scope
 assert 13 '{ a = 10; b = 3; } return a + b;'
 
+# function calls
+assert 3 'return ret3();'
+assert 5 'return ret5();'
 
 echo 'all tests passed'
 

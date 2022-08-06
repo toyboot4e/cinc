@@ -23,6 +23,8 @@ typedef enum { // forward-declarations for enums are forbidden..
     ND_FOR,
     ND_BLOCK,
 
+    ND_CALL,
+
     // primitives
     ND_NUM,
 
@@ -77,6 +79,9 @@ struct Node {
 
     /// (Block)
     Node *body;
+
+    /// (Function)
+    Slice fname;
 };
 
 typedef struct LocalVar LocalVar;

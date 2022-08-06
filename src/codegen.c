@@ -184,6 +184,13 @@ static void write_any(Node *node, bool discard) {
         return;
     };
 
+    case ND_CALL:
+        printf("  call %.*s\n", node->fname.len, node->fname.str);
+        printf("  push rax\n");
+
+        discard_if(discard);
+        return;
+
     case ND_LVAR:
         printf("  # local variable (push address + dereference rax)\n");
         write_addr(node);
